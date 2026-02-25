@@ -33,26 +33,48 @@ export default function SurveyCard({ survey }: Props) {
 
   const handleDelete = async () => {
     if (!confirm(t('common.confirm'))) return
-    await deleteSurvey(survey.id)
-    removeSurveyFromList(survey.id)
-    toast.success('Survey deleted')
+    try {
+      await deleteSurvey(survey.id)
+      removeSurveyFromList(survey.id)
+      toast.success('Survey deleted')
+    } catch (err) {
+      console.error('Failed to delete survey:', err)
+      toast.error('Failed to delete survey. Please try again.')
+    }
   }
 
   const handlePublish = async () => {
-    await publishSurvey(survey.id)
-    updateSurveyInList({ ...survey, status: 'published' })
-    toast.success('Survey published')
-    setShowQR(true)
+    try {
+      await publishSurvey(survey.id)
+      updateSurveyInList({ ...survey, status: 'published' })
+      toast.success('Survey published')
+      setShowQR(true)
+    } catch (err) {
+      console.error('Failed to publish survey:', err)
+      toast.error('Failed to publish survey. Please try again.')
+    }
   }
 
   const handleLock = async () => {
-    await lockSurvey(survey.id)
-    updateSurveyInList({ ...survey, status: 'locked' })
+    try {
+      await lockSurvey(survey.id)
+      updateSurveyInList({ ...survey, status: 'locked' })
+      toast.success('Survey locked')
+    } catch (err) {
+      console.error('Failed to lock survey:', err)
+      toast.error('Failed to lock survey. Please try again.')
+    }
   }
 
   const handleUnlock = async () => {
-    await unlockSurvey(survey.id)
-    updateSurveyInList({ ...survey, status: 'published' })
+    try {
+      await unlockSurvey(survey.id)
+      updateSurveyInList({ ...survey, status: 'published' })
+      toast.success('Survey unlocked')
+    } catch (err) {
+      console.error('Failed to unlock survey:', err)
+      toast.error('Failed to unlock survey. Please try again.')
+    }
   }
 
   const copyLink = () => {

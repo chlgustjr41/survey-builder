@@ -28,21 +28,46 @@ export default function BuilderHeader({ onSave }: Props) {
   const surveyUrl = `${window.location.origin}/s/${draft.id}`
 
   const handlePublish = async () => {
-    await onSave()
-    await publishSurvey(draft.id)
-    updateMeta({ status: 'published' } as never)
-    toast.success('Survey published!')
-    setShowQR(true)
+    // Guard: must have at least one section containing at least one question
+    const hasQuestions = draft.sectionOrder.some(
+      (sid) => (draft.sections[sid]?.questionOrder?.length ?? 0) > 0
+    )
+    if (!hasQuestions) {
+      toast.error('Add at least one question before publishing.')
+      return
+    }
+    try {
+      await onSave()
+      await publishSurvey(draft.id)
+      updateMeta({ status: 'published' } as never)
+      toast.success('Survey published!')
+      setShowQR(true)
+    } catch (err) {
+      console.error('Failed to publish:', err)
+      toast.error('Failed to publish survey. Please try again.')
+    }
   }
 
   const handleLock = async () => {
-    await lockSurvey(draft.id)
-    updateMeta({ status: 'locked' } as never)
+    try {
+      await lockSurvey(draft.id)
+      updateMeta({ status: 'locked' } as never)
+      toast.success('Survey locked.')
+    } catch (err) {
+      console.error('Failed to lock:', err)
+      toast.error('Failed to lock survey. Please try again.')
+    }
   }
 
   const handleUnlock = async () => {
-    await unlockSurvey(draft.id)
-    updateMeta({ status: 'published' } as never)
+    try {
+      await unlockSurvey(draft.id)
+      updateMeta({ status: 'published' } as never)
+      toast.success('Survey unlocked.')
+    } catch (err) {
+      console.error('Failed to unlock:', err)
+      toast.error('Failed to unlock survey. Please try again.')
+    }
   }
 
   return (

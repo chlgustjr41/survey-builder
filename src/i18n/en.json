@@ -51,7 +51,8 @@
       "title": "Schedule",
       "openAt": "Open At",
       "closeAt": "Close At",
-      "noSchedule": "No schedule (always open when published)"
+      "noSchedule": "No schedule (always open when published)",
+      "error": "Open time must be before close time"
     },
     "identification": {
       "title": "Responder Identification",
@@ -125,7 +126,8 @@
   },
   "result": {
     "yourScore": "Your Score",
-    "outOf": "out of"
+    "outOf": "out of",
+    "noRange": "Thank you for completing the survey!"
   },
   "responses": {
     "title": "Responses",
@@ -142,7 +144,12 @@
       "score": "Score",
       "actions": "Actions"
     },
-    "noResponses": "No responses yet."
+    "noResponses": "No responses yet.",
+    "noFiltersMatch": "No responses match the current filters.",
+    "detail": {
+      "responder": "Responder",
+      "answers": "Answers"
+    }
   },
   "common": {
     "cancel": "Cancel",

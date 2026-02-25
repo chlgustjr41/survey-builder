@@ -21,6 +21,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
   const [threshold, setThreshold] = useState(0)
   const [operator, setOperator] = useState<ScoreOperator>('gte')
   const [targetSectionId, setTargetSectionId] = useState('')
+  const [addError, setAddError] = useState('')
 
   if (!draft) return null
 
@@ -36,13 +37,24 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
     .filter(Boolean)
 
   const handleAdd = () => {
-    if (!targetSectionId) return
+    if (!targetSectionId) {
+      setAddError('Please select a target section.')
+      return
+    }
     if (ruleType === 'answer') {
-      if (!questionId || !optionId) return
+      if (!questionId) {
+        setAddError('Please select a question.')
+        return
+      }
+      if (!optionId) {
+        setAddError('Please select an answer option.')
+        return
+      }
       addBranchRule(section.id, { type: 'answer', questionId, optionId, targetSectionId })
     } else {
       addBranchRule(section.id, { type: 'score', threshold, operator, targetSectionId })
     }
+    setAddError('')
     setQuestionId('')
     setOptionId('')
     setTargetSectionId('')
@@ -101,7 +113,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                 <select
                   className="text-xs border border-gray-200 rounded p-1.5 w-full"
                   value={questionId}
-                  onChange={(e) => { setQuestionId(e.target.value); setOptionId('') }}
+                  onChange={(e) => { setQuestionId(e.target.value); setOptionId(''); setAddError('') }}
                 >
                   <option value="">Select question...</option>
                   {questionsInSection.map((q) => (
@@ -146,7 +158,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
               <select
                 className="flex-1 text-xs border border-gray-200 rounded p-1.5"
                 value={targetSectionId}
-                onChange={(e) => setTargetSectionId(e.target.value)}
+                onChange={(e) => { setTargetSectionId(e.target.value); setAddError('') }}
               >
                 <option value="">Select section...</option>
                 {otherSections.map((s) => (
@@ -155,6 +167,11 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
               </select>
             </div>
 
+            {addError && (
+              <p className="text-xs text-red-500 flex items-center gap-1">
+                <span>⚠</span> {addError}
+              </p>
+            )}
             <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-xs" onClick={handleAdd}>
               <Plus className="w-3 h-3 mr-1" />
               {t('builder.branchRules.add')}

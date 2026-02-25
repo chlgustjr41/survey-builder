@@ -29,6 +29,12 @@ export default function ScheduleEditor() {
     if (!v) updateMeta({ schedule: { openAt: null, closeAt: null } })
   }
 
+  const { openAt, closeAt } = draft.schedule
+  const scheduleError =
+    openAt && closeAt && openAt >= closeAt
+      ? t('builder.schedule.error')
+      : null
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
@@ -41,7 +47,7 @@ export default function ScheduleEditor() {
             <label className="text-xs text-gray-500 mb-1 block">{t('builder.schedule.openAt')}</label>
             <Input
               type="datetime-local"
-              className="text-xs"
+              className={`text-xs ${scheduleError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
               value={toDatetimeLocal(draft.schedule.openAt)}
               onChange={(e) =>
                 updateMeta({ schedule: { ...draft.schedule, openAt: fromDatetimeLocal(e.target.value) } })
@@ -52,13 +58,18 @@ export default function ScheduleEditor() {
             <label className="text-xs text-gray-500 mb-1 block">{t('builder.schedule.closeAt')}</label>
             <Input
               type="datetime-local"
-              className="text-xs"
+              className={`text-xs ${scheduleError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
               value={toDatetimeLocal(draft.schedule.closeAt)}
               onChange={(e) =>
                 updateMeta({ schedule: { ...draft.schedule, closeAt: fromDatetimeLocal(e.target.value) } })
               }
             />
           </div>
+          {scheduleError && (
+            <p className="text-xs text-red-500 flex items-center gap-1">
+              <span>⚠</span> {scheduleError}
+            </p>
+          )}
         </>
       )}
     </div>

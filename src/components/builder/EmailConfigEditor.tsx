@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Upload, Trash2 } from 'lucide-react'
+import { Upload, Trash2, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,6 +12,7 @@ import { uploadImage } from '@/services/storageService'
 export default function EmailConfigEditor() {
   const { t } = useTranslation()
   const { draft, updateMeta } = useBuilderStore()
+  const [uploading, setUploading] = useState(false)
   if (!draft) return null
 
   const config = draft.emailConfig
@@ -19,8 +22,16 @@ export default function EmailConfigEditor() {
   }
 
   const handleImageUpload = async (file: File) => {
-    const url = await uploadImage(file, 'email-images')
-    update({ imageUrl: url })
+    setUploading(true)
+    try {
+      const url = await uploadImage(file, 'email-images')
+      update({ imageUrl: url })
+    } catch (err) {
+      console.error('Image upload failed:', err)
+      toast.error('Failed to upload image. Please try again.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -64,6 +75,11 @@ export default function EmailConfigEditor() {
                 >
                   <Trash2 className="w-3 h-3 text-red-400" />
                 </Button>
+              </div>
+            ) : uploading ? (
+              <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 border border-dashed border-gray-300 rounded p-3">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Uploading…
               </div>
             ) : (
               <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer hover:text-gray-600 border border-dashed border-gray-300 rounded p-3 justify-center">

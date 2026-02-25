@@ -51,7 +51,8 @@
       "title": "일정",
       "openAt": "시작 시간",
       "closeAt": "종료 시간",
-      "noSchedule": "일정 없음 (게시 시 항상 열림)"
+      "noSchedule": "일정 없음 (게시 시 항상 열림)",
+      "error": "시작 시간은 종료 시간보다 빨라야 합니다"
     },
     "identification": {
       "title": "응답자 식별",
@@ -125,7 +126,8 @@
   },
   "result": {
     "yourScore": "점수",
-    "outOf": "/"
+    "outOf": "/",
+    "noRange": "설문을 완료해 주셔서 감사합니다!"
   },
   "responses": {
     "title": "응답",
@@ -142,7 +144,12 @@
       "score": "점수",
       "actions": "작업"
     },
-    "noResponses": "아직 응답이 없습니다."
+    "noResponses": "아직 응답이 없습니다.",
+    "noFiltersMatch": "현재 필터에 맞는 응답이 없습니다.",
+    "detail": {
+      "responder": "응답자",
+      "answers": "답변"
+    }
   },
   "common": {
     "cancel": "취소",

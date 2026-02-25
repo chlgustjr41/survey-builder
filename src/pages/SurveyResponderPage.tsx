@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { subscribeToSurvey } from '@/services/surveyService'
 import { submitResponse } from '@/services/responseService'
 import { calculateTotalScore, isSurveyOpen } from '@/lib/scoring'
@@ -46,17 +47,23 @@ export default function SurveyResponderPage() {
   const handleSubmit = async (answers: Record<string, Answer>) => {
     if (!survey) return
     setStage('submitting')
-    const totalScore = calculateTotalScore(answers, survey.questions)
-    const input: ResponseInput = {
-      surveyId: survey.id,
-      respondedAt: Date.now(),
-      identification,
-      answers,
-      totalScore,
-      emailSent: false,
+    try {
+      const totalScore = calculateTotalScore(answers, survey.questions)
+      const input: ResponseInput = {
+        surveyId: survey.id,
+        respondedAt: Date.now(),
+        identification,
+        answers,
+        totalScore,
+        emailSent: false,
+      }
+      await submitResponse(input)
+      navigate(`/s/${survey.id}/result`, { state: { totalScore, surveyId: survey.id } })
+    } catch (err) {
+      console.error('Failed to submit response:', err)
+      toast.error('Failed to submit your response. Please try again.')
+      setStage('survey')
     }
-    await submitResponse(input)
-    navigate(`/s/${survey.id}/result`, { state: { totalScore, surveyId: survey.id } })
   }
 
   if (stage === 'loading') {

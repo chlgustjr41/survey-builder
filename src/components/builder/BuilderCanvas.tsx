@@ -12,7 +12,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { Plus } from 'lucide-react'
+import { Plus, LayoutList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBuilderStore } from '@/stores/builderStore'
 import SectionCard from './SectionCard'
@@ -36,6 +36,14 @@ export default function BuilderCanvas() {
   return (
     <main className="flex-1 overflow-y-auto p-6">
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
+        {draft.sectionOrder.length === 0 && (
+          <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed border-gray-200 rounded-2xl">
+            <LayoutList className="w-10 h-10 text-gray-300 mb-3" />
+            <p className="text-sm font-medium text-gray-500 mb-1">No sections yet</p>
+            <p className="text-xs text-gray-400 mb-4">Click the button below to add your first section and start adding questions.</p>
+          </div>
+        )}
+
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
           <SortableContext items={draft.sectionOrder} strategy={verticalListSortingStrategy}>
             {draft.sectionOrder.map((sectionId) => {

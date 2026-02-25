@@ -40,7 +40,7 @@ export default function ResultScreen({ survey, totalScore }: Props) {
             </div>
           )}
 
-          {range && (
+          {range ? (
             <>
               {range.imageUrl && (
                 <img
@@ -53,6 +53,10 @@ export default function ResultScreen({ survey, totalScore }: Props) {
                 <p className="text-gray-700 text-sm text-center leading-relaxed">{range.message}</p>
               )}
             </>
+          ) : (
+            resultConfig.ranges.length > 0 && (
+              <p className="text-gray-500 text-sm text-center leading-relaxed">{t('result.noRange')}</p>
+            )
           )}
         </div>
       </motion.div>

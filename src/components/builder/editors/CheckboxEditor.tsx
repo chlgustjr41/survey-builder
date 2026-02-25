@@ -13,6 +13,8 @@ export default function CheckboxEditor({ question }: Props) {
   const { updateQuestion } = useBuilderStore()
   const options = question.options ?? []
   const cfg = question.checkboxConfig ?? { min: 1, max: options.length || 1 }
+  const minError = cfg.min < 0 ? 'Min must be ≥ 0' : cfg.min > cfg.max ? 'Min must be ≤ max' : null
+  const maxError = cfg.max < cfg.min ? 'Max must be ≥ min' : (options.length > 0 && cfg.max > options.length) ? `Max cannot exceed ${options.length} options` : null
 
   const updateOption = (id: string, fields: Partial<QuestionOption>) => {
     updateQuestion(question.id, {
@@ -58,27 +60,38 @@ export default function CheckboxEditor({ question }: Props) {
       </Button>
 
       {/* Min / max selection limits */}
-      <div className="flex items-center gap-2 mt-1 pt-2 border-t border-gray-100">
-        <span className="text-xs text-gray-500">Select</span>
-        <Input
-          type="number"
-          min={0}
-          className="w-14 h-7 text-xs"
-          value={cfg.min}
-          onChange={(e) =>
-            updateQuestion(question.id, { checkboxConfig: { ...cfg, min: Number(e.target.value) } })
-          }
-        />
-        <span className="text-xs text-gray-400">–</span>
-        <Input
-          type="number"
-          min={1}
-          className="w-14 h-7 text-xs"
-          value={cfg.max}
-          onChange={(e) =>
-            updateQuestion(question.id, { checkboxConfig: { ...cfg, max: Number(e.target.value) } })
-          }
-        />
+      <div className="flex flex-col gap-1 mt-1 pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Select</span>
+          <div className="flex flex-col">
+            <Input
+              type="number"
+              min={0}
+              className={`w-14 h-7 text-xs ${minError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
+              value={cfg.min}
+              onChange={(e) =>
+                updateQuestion(question.id, { checkboxConfig: { ...cfg, min: Number(e.target.value) } })
+              }
+            />
+          </div>
+          <span className="text-xs text-gray-400">–</span>
+          <div className="flex flex-col">
+            <Input
+              type="number"
+              min={1}
+              className={`w-14 h-7 text-xs ${maxError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
+              value={cfg.max}
+              onChange={(e) =>
+                updateQuestion(question.id, { checkboxConfig: { ...cfg, max: Number(e.target.value) } })
+              }
+            />
+          </div>
+        </div>
+        {(minError || maxError) && (
+          <p className="text-xs text-red-500 flex items-center gap-1">
+            <span>⚠</span> {minError ?? maxError}
+          </p>
+        )}
       </div>
     </div>
   )

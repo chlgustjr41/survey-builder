@@ -25,7 +25,7 @@ export default function ResponseDetail({ response, survey }: Props) {
 
       {/* Identification */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Responder</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{t('responses.detail.responder')}</p>
         <div className="flex flex-col gap-1">
           {Object.entries(response.identification).map(([key, val]) => (
             <div key={key} className="flex justify-between text-sm">
@@ -38,7 +38,7 @@ export default function ResponseDetail({ response, survey }: Props) {
 
       {/* Answers */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Answers</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{t('responses.detail.answers')}</p>
         <div className="flex flex-col gap-3">
           {Object.values(survey.questions).map((question) => {
             const answer = response.answers[question.id]
