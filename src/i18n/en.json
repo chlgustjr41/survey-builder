@@ -1,0 +1,157 @@
+{
+  "app": {
+    "name": "Survey Builder",
+    "tagline": "Create powerful surveys in minutes"
+  },
+  "auth": {
+    "signIn": "Sign in with Google",
+    "signOut": "Sign Out",
+    "signingIn": "Signing in..."
+  },
+  "nav": {
+    "mySurveys": "My Surveys",
+    "newSurvey": "New Survey"
+  },
+  "survey": {
+    "title": "Title",
+    "description": "Description",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "locked": "Locked"
+    },
+    "publish": "Publish",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "delete": "Delete",
+    "edit": "Edit",
+    "viewResponses": "View Responses",
+    "qrCode": "QR Code",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!",
+    "noSurveys": "No surveys yet. Create your first one!",
+    "createFirst": "Create Survey"
+  },
+  "builder": {
+    "settings": "Survey Settings",
+    "sections": "Sections",
+    "addSection": "Add Section",
+    "addQuestion": "Add Question",
+    "sectionTitle": "Section Title",
+    "questionPrompt": "Question",
+    "required": "Required",
+    "points": "Points",
+    "options": "Options",
+    "addOption": "Add Option",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "unsavedChanges": "Unsaved changes",
+    "schedule": {
+      "title": "Schedule",
+      "openAt": "Open At",
+      "closeAt": "Close At",
+      "noSchedule": "No schedule (always open when published)"
+    },
+    "identification": {
+      "title": "Responder Identification",
+      "addField": "Add Field",
+      "fieldLabel": "Field Label",
+      "preset": {
+        "name": "Full Name",
+        "dob": "Date of Birth",
+        "email": "Email",
+        "phone": "Phone Number",
+        "employeeId": "Employee ID",
+        "studentId": "Student ID",
+        "custom": "Custom Field"
+      }
+    },
+    "result": {
+      "title": "Result Screen",
+      "showScore": "Show Score",
+      "addRange": "Add Score Range",
+      "rangeMin": "Min Score",
+      "rangeMax": "Max Score",
+      "message": "Message",
+      "image": "Result Image (optional)"
+    },
+    "email": {
+      "title": "Email Automation",
+      "enable": "Enable automated email",
+      "subject": "Email Subject",
+      "body": "Email Body (HTML)",
+      "image": "Attachment Image (optional)"
+    },
+    "branchRules": {
+      "title": "Branch Logic",
+      "add": "Add Rule",
+      "type": {
+        "answer": "Based on Answer",
+        "score": "Based on Score"
+      },
+      "ifAnswer": "If answer to",
+      "is": "is",
+      "jumpTo": "jump to",
+      "ifScore": "If running score",
+      "threshold": "score threshold"
+    }
+  },
+  "questionType": {
+    "radio": "Single Choice",
+    "checkbox": "Multiple Choice",
+    "text-short": "Short Text",
+    "text-long": "Long Text",
+    "rating": "Rating Scale",
+    "tag-input": "Tag Input"
+  },
+  "responder": {
+    "startSurvey": "Start Survey",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "required": "This field is required",
+    "surveyLocked": "This survey is not accepting responses right now.",
+    "surveyNotStarted": "This survey hasn't opened yet.",
+    "surveyEnded": "This survey has closed.",
+    "identificationTitle": "Please identify yourself",
+    "identificationSubtitle": "This information will be recorded with your response.",
+    "selectMin": "Please select at least {{min}} option(s).",
+    "selectMax": "Please select at most {{max}} option(s).",
+    "addTag": "Add a tag and press Enter",
+    "thankYou": "Thank you!",
+    "responseSubmitted": "Your response has been submitted."
+  },
+  "result": {
+    "yourScore": "Your Score",
+    "outOf": "out of"
+  },
+  "responses": {
+    "title": "Responses",
+    "total": "{{count}} response(s)",
+    "filters": {
+      "title": "Filters",
+      "scoreRange": "Score Range",
+      "dateRange": "Date Range",
+      "search": "Search by name or ID",
+      "clear": "Clear Filters"
+    },
+    "table": {
+      "respondedAt": "Submitted",
+      "score": "Score",
+      "actions": "Actions"
+    },
+    "noResponses": "No responses yet."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "save": "Save",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "language": "Language"
+  }
+}
