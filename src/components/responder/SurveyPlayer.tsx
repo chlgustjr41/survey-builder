@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { toast } from 'sonner'
 import type { Survey } from '@/types/survey'
 import type { Answer } from '@/types/response'
 import { resolveBranchTarget, calculateAnswerScore } from '@/lib/scoring'
@@ -19,6 +18,7 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
   const { t } = useTranslation()
   const [sectionIndex, setSectionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, Answer>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [runningScore, setRunningScore] = useState(0)
 
   const section = survey.sections[survey.sectionOrder[sectionIndex]]
@@ -30,22 +30,37 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
     if (!question) return
     const score = calculateAnswerScore({ questionId, value, score: 0 }, question)
     setAnswers((prev) => ({ ...prev, [questionId]: { questionId, value, score } }))
+    // Clear error for this question as soon as user provides an answer
+    setErrors((prev) => {
+      if (!prev[questionId]) return prev
+      const next = { ...prev }
+      delete next[questionId]
+      return next
+    })
   }
 
-  const validateSection = () => {
+  const validateSection = (): boolean => {
+    const newErrors: Record<string, string> = {}
     for (const qId of section.questionOrder) {
       const q = survey.questions[qId]
       if (!q?.required) continue
       const ans = answers[qId]
       if (!ans || ans.value === '' || (Array.isArray(ans.value) && ans.value.length === 0)) {
-        toast.error(t('responder.required'))
-        return false
+        newErrors[qId] = t('responder.required')
+        continue
       }
       if (q.type === 'checkbox' && q.checkboxConfig && Array.isArray(ans.value)) {
         const { min, max } = q.checkboxConfig
-        if (ans.value.length < min) { toast.error(t('responder.selectMin', { min })); return false }
-        if (ans.value.length > max) { toast.error(t('responder.selectMax', { max })); return false }
+        if (ans.value.length < min) newErrors[qId] = t('responder.selectMin', { min })
+        else if (ans.value.length > max) newErrors[qId] = t('responder.selectMax', { max })
       }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      // Scroll first errored question into view
+      const firstErrId = Object.keys(newErrors)[0]
+      document.getElementById(`question-${firstErrId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
     }
     return true
   }
@@ -66,12 +81,16 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
     if (nextIdx >= totalSections || nextIdx === -1) {
       onSubmit(answers)
     } else {
+      setErrors({})
       setSectionIndex(nextIdx)
     }
   }
 
   const handleBack = () => {
-    if (sectionIndex > 0) setSectionIndex((i) => i - 1)
+    if (sectionIndex > 0) {
+      setErrors({})
+      setSectionIndex((i) => i - 1)
+    }
   }
 
   const isLast = sectionIndex === totalSections - 1
@@ -106,9 +125,11 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
               return (
                 <QuestionRenderer
                   key={qId}
+                  id={`question-${qId}`}
                   question={question}
                   value={answers[qId]?.value}
                   onChange={(val) => handleAnswer(qId, val)}
+                  error={errors[qId]}
                 />
               )
             })}

@@ -11,23 +11,35 @@ interface Props {
   question: Question
   value: Answer['value'] | undefined
   onChange: (value: Answer['value']) => void
+  error?: string
+  id?: string
 }
 
-export default function QuestionRenderer({ question, value, onChange }: Props) {
+export default function QuestionRenderer({ question, value, onChange, error, id }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+    <div
+      id={id}
+      className={`bg-white rounded-xl border p-5 shadow-sm transition-colors ${
+        error ? 'border-red-400 ring-1 ring-red-400' : 'border-gray-200'
+      }`}
+    >
       <p className="font-medium text-gray-900 mb-4">
         {question.prompt}
         {question.required && <span className="text-orange-500 ml-1">*</span>}
       </p>
       <QuestionInput question={question} value={value} onChange={onChange} t={t} />
+      {error && (
+        <p className="mt-3 text-xs font-medium text-red-500 flex items-center gap-1">
+          <span>⚠</span> {error}
+        </p>
+      )}
     </div>
   )
 }
 
-function QuestionInput({ question, value, onChange, t }: Props & { t: (k: string, options?: Record<string, unknown>) => string }) {
+function QuestionInput({ question, value, onChange, t }: Omit<Props, 'error' | 'id'> & { t: (k: string, options?: Record<string, unknown>) => string }) {
   if (question.type === 'radio') {
     return (
       <div className="flex flex-col gap-2">
