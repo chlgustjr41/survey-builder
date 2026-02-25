@@ -60,14 +60,25 @@ export async function getSurveysByAuthor(authorId: string): Promise<Survey[]> {
 
 export function subscribeToAuthorSurveys(
   authorId: string,
-  cb: (surveys: Survey[]) => void
+  cb: (surveys: Survey[]) => void,
+  onError?: (err: Error) => void
 ): Unsubscribe {
   const q = query(ref(db, 'surveys'), orderByChild('authorId'), equalTo(authorId))
-  return onValue(q, (snap) => {
-    if (!snap.exists()) { cb([]); return }
-    const surveys = Object.values(snap.val() as Record<string, Survey>)
-    cb(surveys.sort((a, b) => b.updatedAt - a.updatedAt))
-  })
+  return onValue(
+    q,
+    (snap) => {
+      if (!snap.exists()) { cb([]); return }
+      const surveys = Object.values(snap.val() as Record<string, Survey>)
+      cb(surveys.sort((a, b) => b.updatedAt - a.updatedAt))
+    },
+    (err) => {
+      // Cancel callback — fires on permission errors or network failures.
+      // Without this, errors are swallowed and loading never resolves.
+      console.error('subscribeToAuthorSurveys failed:', err)
+      cb([])                  // resolve to empty so UI unblocks
+      onError?.(err)
+    }
+  )
 }
 
 export async function saveSurvey(survey: Survey): Promise<void> {
