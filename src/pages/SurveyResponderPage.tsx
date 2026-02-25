@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { subscribeToSurvey } from '@/services/surveyService'
 import { submitResponse } from '@/services/responseService'
 import { calculateTotalScore, isSurveyOpen } from '@/lib/scoring'
@@ -13,7 +12,6 @@ import SurveyGate from '@/components/responder/SurveyGate'
 type Stage = 'loading' | 'gated' | 'identification' | 'survey' | 'submitting'
 
 export default function SurveyResponderPage() {
-  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [survey, setSurvey] = useState<Survey | null>(null)

@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useBuilderStore } from '@/stores/builderStore'
 import { createSurvey, getSurveyById, saveSurvey } from '@/services/surveyService'
-import AppShell from '@/components/shared/AppShell'
 import BuilderCanvas from '@/components/builder/BuilderCanvas'
 import BuilderSidebar from '@/components/builder/BuilderSidebar'
 import BuilderHeader from '@/components/builder/BuilderHeader'
@@ -15,7 +14,7 @@ export default function SurveyBuilderPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { draft, initDraft, isDirty, isSaving, setIsSaving, setIsDirty } = useBuilderStore()
+  const { draft, initDraft, isDirty, setIsSaving, setIsDirty } = useBuilderStore()
 
   useEffect(() => {
     if (!user) return

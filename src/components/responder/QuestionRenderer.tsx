@@ -1,8 +1,7 @@
-import { useState, KeyboardEvent } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 import type { Question } from '@/types/question'
@@ -28,7 +27,7 @@ export default function QuestionRenderer({ question, value, onChange }: Props) {
   )
 }
 
-function QuestionInput({ question, value, onChange, t }: Props & { t: (k: string, o?: object) => string }) {
+function QuestionInput({ question, value, onChange, t }: Props & { t: (k: string, options?: Record<string, unknown>) => string }) {
   if (question.type === 'radio') {
     return (
       <div className="flex flex-col gap-2">

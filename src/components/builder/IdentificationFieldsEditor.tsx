@@ -48,10 +48,6 @@ export default function IdentificationFieldsEditor() {
     updateMeta({ identificationFields: fields.filter((f) => f.id !== id) })
   }
 
-  const toggleRequired = (id: string) => {
-    updateMeta({ identificationFields: fields.map((f) => (f.id === id ? { ...f, required: !f.required } : f)) })
-  }
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
@@ -60,7 +56,7 @@ export default function IdentificationFieldsEditor() {
           return (
             <div key={key} className="flex items-center justify-between">
               <span className="text-xs text-gray-700">{t(labelKey)}</span>
-              <Switch size="sm" checked={active} onCheckedChange={() => togglePreset(key)} />
+              <Switch checked={active} onCheckedChange={() => togglePreset(key)} />
             </div>
           )
         })}

@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { GripVertical, Plus, Trash2, ChevronDown, ChevronRight, GitBranch } from 'lucide-react'
+import { GripVertical, Trash2, ChevronDown, ChevronRight, GitBranch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useBuilderStore } from '@/stores/builderStore'

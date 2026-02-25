@@ -1,4 +1,4 @@
-import { ref, set, get, push, onValue, type Unsubscribe } from 'firebase/database'
+import { ref, set, get, onValue, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
 import type { Response, ResponseInput, ResponseFilters } from '@/types/response'
 import { nanoid } from 'nanoid'
