@@ -83,7 +83,11 @@ export default function EmailConfigEditor() {
                   variant="ghost"
                   size="icon"
                   className="absolute top-1 right-1 h-6 w-6 bg-white/80"
-                  onClick={() => update({ imageUrl: undefined })}
+                  onClick={() => {
+                    // Spread without imageUrl — never set undefined, Firebase RTDB rejects it
+                    const { imageUrl: _removed, ...rest } = config
+                    updateMeta({ emailConfig: rest })
+                  }}
                 >
                   <Trash2 className="w-3 h-3 text-red-400" />
                 </Button>

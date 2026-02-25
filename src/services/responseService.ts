@@ -1,22 +1,8 @@
 import { ref, set, get, onValue, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
 import type { Response, ResponseInput, ResponseFilters } from '@/types/response'
+import { sanitizeForFirebase } from '@/lib/firebaseUtils'
 import { nanoid } from 'nanoid'
-
-/**
- * Firebase RTDB rejects writes that contain `undefined` values, NaN, or
- * Infinity.  Run the payload through JSON round-trip to strip them before
- * sending, then validate key fields so we throw a clear error locally instead
- * of getting an opaque Firebase rejection.
- */
-function sanitizeForFirebase<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data, (_key, value) => {
-    if (value !== value) return 0           // NaN → 0
-    if (value === Infinity) return 0        // Infinity → 0
-    if (value === -Infinity) return 0       // -Infinity → 0
-    return value                            // undefined stripped by JSON.stringify
-  })) as T
-}
 
 function assertValidSubmission(input: ResponseInput): void {
   if (!input.surveyId || typeof input.surveyId !== 'string') {

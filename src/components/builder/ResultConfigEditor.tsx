@@ -39,6 +39,18 @@ export default function ResultConfigEditor() {
     updateConfig({ ranges: config.ranges.filter((r) => r.id !== id) })
   }
 
+  // Remove just the image from a range without setting imageUrl: undefined.
+  // Firebase RTDB rejects writes that contain explicit undefined values.
+  const removeRangeImage = (rangeId: string) => {
+    updateConfig({
+      ranges: config.ranges.map((r) => {
+        if (r.id !== rangeId) return r
+        const { imageUrl: _removed, ...rest } = r
+        return rest as ScoreRange
+      }),
+    })
+  }
+
   const handleImageUpload = async (rangeId: string, file: File) => {
     if (file.size > MAX_IMAGE_BYTES) {
       toast.error(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please use a file under 5 MB.`)
@@ -114,7 +126,7 @@ export default function ResultConfigEditor() {
                     variant="ghost"
                     size="icon"
                     className="absolute top-1 right-1 h-6 w-6 bg-white/80"
-                    onClick={() => updateRange(range.id, { imageUrl: undefined })}
+                    onClick={() => removeRangeImage(range.id)}
                   >
                     <Trash2 className="w-3 h-3 text-red-400" />
                   </Button>

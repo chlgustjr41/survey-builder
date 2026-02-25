@@ -41,7 +41,9 @@ export function normalizeSurvey(survey: Survey): Survey {
       enabled: survey.emailConfig?.enabled ?? false,
       subject: survey.emailConfig?.subject ?? '',
       bodyHtml: survey.emailConfig?.bodyHtml ?? '',
-      imageUrl: survey.emailConfig?.imageUrl,
+      // Only include imageUrl when it is an actual string — spreading undefined
+      // would inject `imageUrl: undefined` which Firebase RTDB rejects on write.
+      ...(survey.emailConfig?.imageUrl ? { imageUrl: survey.emailConfig.imageUrl } : {}),
     },
     sections: normalizedSections,
     questions: normalizedQuestions,

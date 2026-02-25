@@ -12,6 +12,7 @@ import {
 } from 'firebase/database'
 import { db } from './firebase'
 import type { Survey, SurveyInput } from '@/types/survey'
+import { sanitizeForFirebase } from '@/lib/firebaseUtils'
 import { nanoid } from 'nanoid'
 
 export async function createSurvey(authorId: string): Promise<Survey> {
@@ -70,7 +71,10 @@ export function subscribeToAuthorSurveys(
 }
 
 export async function saveSurvey(survey: Survey): Promise<void> {
-  await set(ref(db, `surveys/${survey.id}`), { ...survey, updatedAt: Date.now() })
+  // sanitizeForFirebase strips undefined / NaN values that Firebase RTDB rejects,
+  // e.g. imageUrl: undefined when a user removes an uploaded image.
+  const payload = sanitizeForFirebase({ ...survey, updatedAt: Date.now() })
+  await set(ref(db, `surveys/${survey.id}`), payload)
 }
 
 export async function updateSurveyFields(
