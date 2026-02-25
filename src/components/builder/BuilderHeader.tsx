@@ -98,7 +98,8 @@ export default function BuilderHeader({ onSave }: Props) {
       setShowQR(true)
     } catch (err) {
       console.error('Failed to publish:', err)
-      toast.error(getErrorMessage(err, 'Failed to publish survey — the survey was not made public'))
+      const { message, detail } = getErrorMessage(err, 'Failed to publish survey — the survey was not made public')
+      toast.error(message, { description: detail })
     }
   }
 
@@ -109,7 +110,8 @@ export default function BuilderHeader({ onSave }: Props) {
       toast.success('Survey locked.')
     } catch (err) {
       console.error('Failed to lock:', err)
-      toast.error(getErrorMessage(err, 'Failed to lock survey — it may still be accepting responses'))
+      const { message, detail } = getErrorMessage(err, 'Failed to lock survey — it may still be accepting responses')
+      toast.error(message, { description: detail })
     }
   }
 
@@ -120,7 +122,8 @@ export default function BuilderHeader({ onSave }: Props) {
       toast.success('Survey unlocked.')
     } catch (err) {
       console.error('Failed to unlock:', err)
-      toast.error(getErrorMessage(err, 'Failed to unlock survey — it may still be locked'))
+      const { message, detail } = getErrorMessage(err, 'Failed to unlock survey — it may still be locked')
+      toast.error(message, { description: detail })
     }
   }
 

@@ -62,7 +62,8 @@ export default function SurveyResponderPage() {
       navigate(`/s/${survey.id}/result`, { state: { totalScore, surveyId: survey.id } })
     } catch (err) {
       console.error('Failed to submit response:', err)
-      toast.error(getErrorMessage(err, 'Failed to submit your response — your answers were not saved'))
+      const { message, detail } = getErrorMessage(err, 'Failed to submit your response — your answers were not saved')
+      toast.error(message, { description: detail })
       setStage('survey')
     }
   }

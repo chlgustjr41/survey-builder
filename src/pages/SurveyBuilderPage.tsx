@@ -41,7 +41,8 @@ export default function SurveyBuilderPage() {
       setIsDirty(false)
       if (!silent) toast.success(t('builder.saved'))
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to save survey — your changes may not have been saved'))
+      const { message, detail } = getErrorMessage(err, 'Failed to save survey — your changes may not have been saved')
+      toast.error(message, { description: detail })
     } finally {
       setIsSaving(false)
     }

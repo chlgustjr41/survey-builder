@@ -54,7 +54,8 @@ export default function ResultConfigEditor() {
       updateRange(rangeId, { imageUrl: url })
     } catch (err) {
       console.error('Image upload failed:', err)
-      toast.error(getErrorMessage(err, 'Failed to upload image. Check your connection and try again.'))
+      const { message, detail } = getErrorMessage(err, 'Failed to upload image. Check your connection and try again.')
+      toast.error(message, { description: detail })
     } finally {
       setUploadingId(null)
     }

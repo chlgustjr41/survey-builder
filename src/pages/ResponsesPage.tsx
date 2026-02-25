@@ -27,7 +27,8 @@ export default function ResponsesPage() {
     getSurveyById(id)
       .then(setSurvey)
       .catch((err) => {
-        toast.error(getErrorMessage(err, 'Failed to load survey details. Scores may not display correctly.'))
+        const { message, detail } = getErrorMessage(err, 'Failed to load survey details. Scores may not display correctly.')
+        toast.error(message, { description: detail })
       })
     const unsub = subscribeToResponses(id, setResponses)
     return unsub

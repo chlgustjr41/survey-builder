@@ -1,8 +1,16 @@
 /**
  * Maps Firebase (Auth, RTDB, Storage) error codes and generic network
- * patterns to user-friendly messages.  Pass a `fallback` string that
- * describes what the app was *trying* to do — it is used when no
- * specific code match is found so the user still gets context.
+ * patterns to user-friendly messages.
+ *
+ * getErrorMessage(err, fallback)
+ *   Returns { message, detail } where:
+ *   - message  → human-readable description of what went wrong
+ *   - detail   → raw Firebase code / message for the secondary Sonner line
+ *                (always present so the user can report it)
+ *
+ * Pass the result to Sonner like:
+ *   const { message, detail } = getErrorMessage(err, 'Failed to save')
+ *   toast.error(message, { description: detail })
  */
 
 interface FirebaseLike {
@@ -14,66 +22,86 @@ function isFirebaseLike(err: unknown): err is FirebaseLike {
   return typeof err === 'object' && err !== null
 }
 
-export function getErrorMessage(err: unknown, fallback: string): string {
-  if (!isFirebaseLike(err)) return fallback
+export interface ErrorInfo {
+  /** Short, user-facing sentence. */
+  message: string
+  /** Raw technical detail to show as Sonner description. Never empty. */
+  detail: string
+}
 
-  const code = err.code ?? ''
-  const msg  = (err.message ?? '').toLowerCase()
+export function getErrorMessage(err: unknown, fallback: string): ErrorInfo {
+  const rawCode    = isFirebaseLike(err) ? (err.code    ?? '') : ''
+  const rawMessage = isFirebaseLike(err) ? (err.message ?? '') : String(err)
+  const msgLower   = rawMessage.toLowerCase()
 
-  // ── Auth ────────────────────────────────────────────────────────────
-  if (code === 'auth/network-request-failed') {
-    return 'Sign-in failed — check your internet connection and try again.'
-  }
-  if (code === 'auth/popup-blocked') {
-    return 'Sign-in popup was blocked by your browser. Allow popups for this site and try again.'
-  }
-  if (code === 'auth/too-many-requests') {
-    return 'Too many sign-in attempts. Please wait a moment, then try again.'
-  }
-  if (code === 'auth/user-disabled') {
-    return 'Your account has been disabled. Contact support for help.'
-  }
-  if (code === 'auth/unauthorized-domain') {
-    return 'Sign-in is not enabled for this domain. Contact support.'
-  }
+  // Build the detail line that always appears under the toast
+  const detail = rawCode
+    ? `${rawCode}${rawMessage ? ` — ${rawMessage.slice(0, 120)}` : ''}`
+    : rawMessage.slice(0, 150) || 'No further details available.'
 
-  // ── Storage ─────────────────────────────────────────────────────────
-  if (code === 'storage/unauthorized') {
-    return 'Upload failed — you do not have permission. Try signing out and back in.'
+  // ── Auth ──────────────────────────────────────────────────────────────
+  if (rawCode === 'auth/network-request-failed') {
+    return { message: 'Sign-in failed — check your internet connection and try again.', detail }
   }
-  if (code === 'storage/quota-exceeded') {
-    return 'Storage quota exceeded. Contact support.'
+  if (rawCode === 'auth/popup-blocked') {
+    return { message: 'Sign-in popup was blocked by your browser. Allow popups for this site and try again.', detail }
   }
-  if (code === 'storage/invalid-format') {
-    return 'Unsupported file format. Please upload a JPEG, PNG, GIF, or WebP image.'
+  if (rawCode === 'auth/too-many-requests') {
+    return { message: 'Too many sign-in attempts. Please wait a moment, then try again.', detail }
   }
-  if (code === 'storage/canceled') {
-    return 'Upload was cancelled.'
+  if (rawCode === 'auth/user-disabled') {
+    return { message: 'Your account has been disabled. Contact support for help.', detail }
   }
-  if (code === 'storage/retry-limit-exceeded') {
-    return 'Upload timed out — check your internet connection and try again.'
+  if (rawCode === 'auth/unauthorized-domain') {
+    return { message: 'Sign-in is not enabled for this domain. Contact support.', detail }
   }
 
-  // ── Database / generic Firebase ─────────────────────────────────────
-  if (code === 'PERMISSION_DENIED' || code === 'permission-denied') {
-    return 'Permission denied — you may need to sign out and sign back in.'
+  // ── Storage ───────────────────────────────────────────────────────────
+  if (rawCode === 'storage/unauthorized') {
+    return { message: 'Upload failed — you do not have permission. Try signing out and back in.', detail }
   }
-  if (code === 'unavailable' || code === 'UNAVAILABLE') {
-    return 'Service temporarily unavailable. Check your connection and try again.'
+  if (rawCode === 'storage/quota-exceeded') {
+    return { message: 'Storage quota exceeded. Contact support.', detail }
+  }
+  if (rawCode === 'storage/invalid-format') {
+    return { message: 'Unsupported file format. Please upload a JPEG, PNG, GIF, or WebP image.', detail }
+  }
+  if (rawCode === 'storage/canceled') {
+    return { message: 'Upload was cancelled.', detail }
+  }
+  if (rawCode === 'storage/retry-limit-exceeded') {
+    return { message: 'Upload timed out — check your internet connection and try again.', detail }
   }
 
-  // ── Network pattern matching (message-based) ─────────────────────────
+  // ── Database / RTDB ───────────────────────────────────────────────────
+  if (rawCode === 'PERMISSION_DENIED' || rawCode === 'permission-denied' ||
+      msgLower.includes('permission_denied') || msgLower.includes('permission denied')) {
+    return { message: 'Permission denied — the database rejected this write. Try signing out and back in.', detail }
+  }
+  if (rawCode === 'unavailable' || rawCode === 'UNAVAILABLE') {
+    return { message: 'Service temporarily unavailable. Check your connection and try again.', detail }
+  }
+  if (msgLower.includes('cannot parse firebase url') || msgLower.includes('invalid url')) {
+    return { message: 'Database configuration error — contact the app administrator.', detail }
+  }
+  if (msgLower.includes("couldn't serialize") || msgLower.includes('invalid data') ||
+      msgLower.includes('undefined') || msgLower.includes('nan')) {
+    return { message: 'The response data contained invalid values and could not be saved. Please try again.', detail }
+  }
+
+  // ── Network (message-based) ───────────────────────────────────────────
   if (
-    msg.includes('network error') ||
-    msg.includes('failed to fetch') ||
-    msg.includes('networkerror') ||
-    msg.includes('offline') ||
-    msg.includes('net::err_internet_disconnected')
+    msgLower.includes('network error') ||
+    msgLower.includes('failed to fetch') ||
+    msgLower.includes('networkerror') ||
+    msgLower.includes('offline') ||
+    msgLower.includes('net::err_internet_disconnected')
   ) {
-    return `${fallback} — check your internet connection and try again.`
+    return { message: `${fallback} — check your internet connection and try again.`, detail }
   }
 
-  return fallback
+  // ── Unknown — always surface the raw error so the user can report it ──
+  return { message: fallback, detail }
 }
 
 /**

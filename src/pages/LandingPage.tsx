@@ -23,7 +23,8 @@ export default function LandingPage() {
       await signIn()
     } catch (err) {
       if (!isUserCancelledAuth(err)) {
-        toast.error(getErrorMessage(err, 'Sign-in failed. Please try again.'))
+        const { message, detail } = getErrorMessage(err, 'Sign-in failed. Please try again.')
+        toast.error(message, { description: detail })
       }
     } finally {
       setSigningIn(false)

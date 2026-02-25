@@ -40,7 +40,8 @@ export default function SurveyCard({ survey }: Props) {
       toast.success('Survey deleted')
     } catch (err) {
       console.error('Failed to delete survey:', err)
-      toast.error(getErrorMessage(err, `Failed to delete "${survey.title}" — the survey was not removed`))
+      const { message, detail } = getErrorMessage(err, `Failed to delete "${survey.title}" — the survey was not removed`)
+      toast.error(message, { description: detail })
     }
   }
 
@@ -52,7 +53,8 @@ export default function SurveyCard({ survey }: Props) {
       setShowQR(true)
     } catch (err) {
       console.error('Failed to publish survey:', err)
-      toast.error(getErrorMessage(err, `Failed to publish "${survey.title}" — the survey was not made public`))
+      const { message, detail } = getErrorMessage(err, `Failed to publish "${survey.title}" — the survey was not made public`)
+      toast.error(message, { description: detail })
     }
   }
 
@@ -63,7 +65,8 @@ export default function SurveyCard({ survey }: Props) {
       toast.success('Survey locked')
     } catch (err) {
       console.error('Failed to lock survey:', err)
-      toast.error(getErrorMessage(err, `Failed to lock "${survey.title}" — it may still be accepting responses`))
+      const { message, detail } = getErrorMessage(err, `Failed to lock "${survey.title}" — it may still be accepting responses`)
+      toast.error(message, { description: detail })
     }
   }
 
@@ -74,7 +77,8 @@ export default function SurveyCard({ survey }: Props) {
       toast.success('Survey unlocked')
     } catch (err) {
       console.error('Failed to unlock survey:', err)
-      toast.error(getErrorMessage(err, `Failed to unlock "${survey.title}" — it may still be locked`))
+      const { message, detail } = getErrorMessage(err, `Failed to unlock "${survey.title}" — it may still be locked`)
+      toast.error(message, { description: detail })
     }
   }
 
