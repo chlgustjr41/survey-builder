@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useLocation } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { getSurveyById } from '@/services/surveyService'
 import type { Survey } from '@/types/survey'
 import ResultScreen from '@/components/responder/ResultScreen'
@@ -7,20 +7,29 @@ import ResultScreen from '@/components/responder/ResultScreen'
 export default function SurveyResultPage() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const [survey, setSurvey] = useState<Survey | null>(null)
+  const [loading, setLoading] = useState(true)
   const totalScore = (location.state as { totalScore?: number })?.totalScore ?? 0
 
   useEffect(() => {
-    if (id) getSurveyById(id).then(setSurvey)
-  }, [id])
+    if (!id) { navigate('/'); return }
+    getSurveyById(id).then((s) => {
+      if (!s) navigate('/')
+      else setSurvey(s)
+      setLoading(false)
+    })
+  }, [id, navigate])
 
-  if (!survey) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
       </div>
     )
   }
+
+  if (!survey) return null
 
   return <ResultScreen survey={survey} totalScore={totalScore} />
 }
