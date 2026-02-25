@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { useBuilderStore } from '@/stores/builderStore'
 import { uploadImage } from '@/services/storageService'
+import { getErrorMessage } from '@/lib/errorMessage'
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5 MB
 
 export default function EmailConfigEditor() {
   const { t } = useTranslation()
@@ -22,13 +25,21 @@ export default function EmailConfigEditor() {
   }
 
   const handleImageUpload = async (file: File) => {
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please use a file under 5 MB.`)
+      return
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only image files are supported (JPEG, PNG, GIF, WebP).')
+      return
+    }
     setUploading(true)
     try {
       const url = await uploadImage(file, 'email-images')
       update({ imageUrl: url })
     } catch (err) {
       console.error('Image upload failed:', err)
-      toast.error('Failed to upload image. Please try again.')
+      toast.error(getErrorMessage(err, 'Failed to upload image. Check your connection and try again.'))
     } finally {
       setUploading(false)
     }

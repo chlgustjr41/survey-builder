@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { QRCodeCanvas } from 'qrcode.react'
 import { useBuilderStore } from '@/stores/builderStore'
 import { publishSurvey, lockSurvey, unlockSurvey } from '@/services/surveyService'
+import { getErrorMessage } from '@/lib/errorMessage'
 import { useState } from 'react'
 
 interface Props { onSave: () => void }
@@ -97,7 +98,7 @@ export default function BuilderHeader({ onSave }: Props) {
       setShowQR(true)
     } catch (err) {
       console.error('Failed to publish:', err)
-      toast.error('Failed to publish survey. Please try again.')
+      toast.error(getErrorMessage(err, 'Failed to publish survey — the survey was not made public'))
     }
   }
 
@@ -108,7 +109,7 @@ export default function BuilderHeader({ onSave }: Props) {
       toast.success('Survey locked.')
     } catch (err) {
       console.error('Failed to lock:', err)
-      toast.error('Failed to lock survey. Please try again.')
+      toast.error(getErrorMessage(err, 'Failed to lock survey — it may still be accepting responses'))
     }
   }
 
@@ -119,7 +120,7 @@ export default function BuilderHeader({ onSave }: Props) {
       toast.success('Survey unlocked.')
     } catch (err) {
       console.error('Failed to unlock:', err)
-      toast.error('Failed to unlock survey. Please try again.')
+      toast.error(getErrorMessage(err, 'Failed to unlock survey — it may still be locked'))
     }
   }
 

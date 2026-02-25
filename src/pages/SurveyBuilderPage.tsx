@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useBuilderStore } from '@/stores/builderStore'
 import { createSurvey, getSurveyById, saveSurvey } from '@/services/surveyService'
+import { getErrorMessage } from '@/lib/errorMessage'
 import BuilderCanvas from '@/components/builder/BuilderCanvas'
 import BuilderSidebar from '@/components/builder/BuilderSidebar'
 import BuilderHeader from '@/components/builder/BuilderHeader'
@@ -39,8 +40,8 @@ export default function SurveyBuilderPage() {
       await saveSurvey(draft)
       setIsDirty(false)
       if (!silent) toast.success(t('builder.saved'))
-    } catch {
-      toast.error(t('common.error'))
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Failed to save survey — your changes may not have been saved'))
     } finally {
       setIsSaving(false)
     }

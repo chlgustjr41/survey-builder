@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { subscribeToSurvey } from '@/services/surveyService'
 import { submitResponse } from '@/services/responseService'
+import { getErrorMessage } from '@/lib/errorMessage'
 import { calculateTotalScore, isSurveyOpen } from '@/lib/scoring'
 import { normalizeSurvey } from '@/lib/normalize'
 import type { Survey } from '@/types/survey'
@@ -61,7 +62,7 @@ export default function SurveyResponderPage() {
       navigate(`/s/${survey.id}/result`, { state: { totalScore, surveyId: survey.id } })
     } catch (err) {
       console.error('Failed to submit response:', err)
-      toast.error('Failed to submit your response. Please try again.')
+      toast.error(getErrorMessage(err, 'Failed to submit your response — your answers were not saved'))
       setStage('survey')
     }
   }
