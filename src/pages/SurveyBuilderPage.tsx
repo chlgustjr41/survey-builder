@@ -31,13 +31,14 @@ export default function SurveyBuilderPage() {
     }
   }, [id, user, initDraft, navigate])
 
-  const handleSave = useCallback(async () => {
+  // Core save — silent=true for auto-save (no toast noise every 2s)
+  const handleSave = useCallback(async (silent = false) => {
     if (!draft) return
     setIsSaving(true)
     try {
       await saveSurvey(draft)
       setIsDirty(false)
-      toast.success(t('builder.saved'))
+      if (!silent) toast.success(t('builder.saved'))
     } catch {
       toast.error(t('common.error'))
     } finally {
@@ -45,10 +46,10 @@ export default function SurveyBuilderPage() {
     }
   }, [draft, setIsSaving, setIsDirty, t])
 
-  // Auto-save on dirty with 2s debounce
+  // Auto-save on dirty with 2s debounce — runs silently
   useEffect(() => {
     if (!isDirty) return
-    const timer = setTimeout(handleSave, 2000)
+    const timer = setTimeout(() => handleSave(true), 2000)
     return () => clearTimeout(timer)
   }, [isDirty, handleSave])
 

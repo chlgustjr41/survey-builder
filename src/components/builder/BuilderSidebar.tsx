@@ -31,12 +31,21 @@ export default function BuilderSidebar() {
       >
         <div className="flex flex-col gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-600 mb-1 block">{t('survey.title')}</label>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">
+              {t('survey.title')}
+              <span className="text-red-500 ml-0.5">*</span>
+            </label>
             <Input
               value={draft.title}
               onChange={(e) => updateMeta({ title: e.target.value })}
               placeholder="Survey title"
+              className={!draft.title.trim() ? 'border-red-400 ring-1 ring-red-300 placeholder:text-red-300' : ''}
             />
+            {!draft.title.trim() && (
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <span>⚠</span> Survey title is required before publishing.
+              </p>
+            )}
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">{t('survey.description')}</label>

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, QrCode, Send, Lock, Unlock } from 'lucide-react'
+import { ArrowLeft, QrCode, Send, Lock, Unlock, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -22,18 +22,71 @@ export default function BuilderHeader({ onSave }: Props) {
   const navigate = useNavigate()
   const { draft, isDirty, isSaving, updateMeta } = useBuilderStore()
   const [showQR, setShowQR] = useState(false)
+  const [publishErrors, setPublishErrors] = useState<string[]>([])
+  const [showErrors, setShowErrors] = useState(false)
 
   if (!draft) return null
 
   const surveyUrl = `${window.location.origin}/s/${draft.id}`
 
-  const handlePublish = async () => {
-    // Guard: must have at least one section containing at least one question
-    const hasQuestions = draft.sectionOrder.some(
-      (sid) => (draft.sections[sid]?.questionOrder?.length ?? 0) > 0
+  // Collect every issue that would block a good survey experience
+  const validateForPublish = (): string[] => {
+    const issues: string[] = []
+
+    // 1. Title required
+    if (!draft.title.trim()) {
+      issues.push('Survey title is required — add it in the Settings panel on the left.')
+    }
+
+    // 2. Must have at least one question
+    const totalQuestions = draft.sectionOrder.reduce(
+      (n, sid) => n + (draft.sections[sid]?.questionOrder?.length ?? 0), 0
     )
-    if (!hasQuestions) {
-      toast.error('Add at least one question before publishing.')
+    if (totalQuestions === 0) {
+      issues.push('Add at least one question to the canvas before publishing.')
+    }
+
+    // 3. Empty question prompts
+    const allQuestions = Object.values(draft.questions)
+    const emptyPrompts = allQuestions.filter((q) => !q.prompt.trim())
+    if (emptyPrompts.length === 1) {
+      issues.push(`1 question is missing its prompt text — look for the amber "Missing question text" badge.`)
+    } else if (emptyPrompts.length > 1) {
+      issues.push(`${emptyPrompts.length} questions are missing prompt text — look for amber badges on each card.`)
+    }
+
+    // 4. Radio / Checkbox need ≥ 2 options
+    allQuestions.forEach((q) => {
+      if ((q.type === 'radio' || q.type === 'checkbox') && (q.options ?? []).length < 2) {
+        const label = q.prompt.trim() || 'Unnamed question'
+        issues.push(`"${label}" needs at least 2 answer options (currently has ${(q.options ?? []).length}).`)
+      }
+    })
+
+    // 5. Empty option labels
+    const emptyLabelCount = allQuestions.reduce(
+      (n, q) => n + (q.options?.filter((o) => !o.label.trim()).length ?? 0), 0
+    )
+    if (emptyLabelCount === 1) {
+      issues.push('1 answer option has an empty label — fill it in or delete it.')
+    } else if (emptyLabelCount > 1) {
+      issues.push(`${emptyLabelCount} answer options have empty labels — fill them in or delete them.`)
+    }
+
+    // 6. Schedule conflict
+    const { openAt, closeAt } = draft.schedule
+    if (openAt && closeAt && openAt >= closeAt) {
+      issues.push('Schedule error: open time must be before close time (check Settings → Schedule).')
+    }
+
+    return issues
+  }
+
+  const handlePublish = async () => {
+    const issues = validateForPublish()
+    if (issues.length > 0) {
+      setPublishErrors(issues)
+      setShowErrors(true)
       return
     }
     try {
@@ -77,15 +130,15 @@ export default function BuilderHeader({ onSave }: Props) {
           <ArrowLeft className="w-4 h-4" />
         </Button>
 
-        <div className="flex-1 flex items-center gap-2">
-          <span className="font-semibold text-gray-800 truncate max-w-xs">
-            {draft.title || 'Untitled Survey'}
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <span className={`font-semibold truncate max-w-xs ${!draft.title.trim() ? 'text-gray-400 italic' : 'text-gray-800'}`}>
+            {draft.title.trim() || 'Untitled Survey'}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[draft.status]}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLORS[draft.status]}`}>
             {t(`survey.status.${draft.status}`)}
           </span>
           {isDirty && (
-            <span className="text-xs text-gray-400">{t('builder.unsavedChanges')}</span>
+            <span className="text-xs text-gray-400 shrink-0">{t('builder.unsavedChanges')}</span>
           )}
         </div>
 
@@ -130,6 +183,39 @@ export default function BuilderHeader({ onSave }: Props) {
         </div>
       </header>
 
+      {/* Validation errors dialog */}
+      <Dialog open={showErrors} onOpenChange={setShowErrors}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              Fix these issues before publishing
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 py-1">
+            {publishErrors.map((err, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-2.5 text-sm text-gray-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5"
+              >
+                <span className="text-red-400 shrink-0 font-bold">{i + 1}.</span>
+                <span>{err}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end pt-1">
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              size="sm"
+              onClick={() => setShowErrors(false)}
+            >
+              Go back and fix
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR code dialog */}
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

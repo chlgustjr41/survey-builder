@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { nanoid } from 'nanoid'
-import { Trash2 } from 'lucide-react'
+import { Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useBuilderStore } from '@/stores/builderStore'
@@ -31,12 +31,18 @@ export default function RadioEditor({ question }: Props) {
 
   return (
     <div className="flex flex-col gap-2 mt-2">
+      {options.length < 2 && (
+        <div className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2.5 py-2">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          Add at least 2 options — single choice questions need options for responders to select.
+        </div>
+      )}
       {options.map((opt) => (
         <div key={opt.id} className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full border-2 border-gray-300 shrink-0" />
           <Input
-            className="flex-1 h-7 text-xs"
-            placeholder="Option label"
+            className={`flex-1 h-7 text-xs ${!opt.label.trim() ? 'border-amber-300 placeholder:text-amber-400' : ''}`}
+            placeholder="Option label (required)"
             value={opt.label}
             onChange={(e) => updateOption(opt.id, { label: e.target.value })}
           />

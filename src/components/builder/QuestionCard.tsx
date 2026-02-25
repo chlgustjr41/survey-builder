@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, ChevronDown } from 'lucide-react'
+import { GripVertical, Trash2, ChevronDown, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -43,20 +43,45 @@ export default function QuestionCard({ question, sectionId }: Props) {
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Validation
+  const hasEmptyPrompt = !question.prompt.trim()
+  const needsOptions =
+    (question.type === 'radio' || question.type === 'checkbox') &&
+    (question.options ?? []).length < 2
+  const hasEmptyOptionLabel = (question.options ?? []).some((o) => !o.label.trim())
+  const hasIssue = hasEmptyPrompt || needsOptions || hasEmptyOptionLabel
+
+  const warningLabel = hasEmptyPrompt
+    ? 'Missing question text'
+    : needsOptions
+    ? 'Needs ≥ 2 options'
+    : 'Empty option label'
+
   return (
-    <div ref={setNodeRef} style={style} className="border border-gray-200 rounded-lg bg-white">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border rounded-lg bg-white transition-colors ${
+        hasIssue ? 'border-amber-300 ring-1 ring-amber-200' : 'border-gray-200'
+      }`}
+    >
       {/* Card header */}
       <div className="flex items-start gap-2 p-3">
         <button {...attributes} {...listeners} className="mt-0.5 cursor-grab text-gray-300 hover:text-gray-500">
           <GripVertical className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <Input
-            value={question.prompt}
-            onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })}
-            placeholder={t('builder.questionPrompt')}
-            className="border-0 p-0 h-auto text-sm font-medium focus-visible:ring-0 w-full"
-          />
+          {/* Prompt input with red underline when empty */}
+          <div className={`border-b pb-0.5 ${hasEmptyPrompt ? 'border-red-300' : 'border-transparent'}`}>
+            <Input
+              value={question.prompt}
+              onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })}
+              placeholder={t('builder.questionPrompt')}
+              className={`border-0 p-0 h-auto text-sm font-medium focus-visible:ring-0 w-full ${
+                hasEmptyPrompt ? 'placeholder:text-red-400' : ''
+              }`}
+            />
+          </div>
           <div className="flex items-center gap-2 mt-1">
             <select
               value={question.type}
@@ -71,7 +96,14 @@ export default function QuestionCard({ question, sectionId }: Props) {
             </select>
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+          {/* Inline warning chip */}
+          {hasIssue && (
+            <span className="flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded font-medium">
+              <AlertTriangle className="w-3 h-3 shrink-0" />
+              {warningLabel}
+            </span>
+          )}
           <span className="text-xs text-gray-400">{t('builder.required')}</span>
           <Switch
             checked={question.required}
