@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { nanoid } from 'nanoid'
 import type { Survey, Section, BranchRule } from '@/types/survey'
 import type { Question, QuestionType } from '@/types/question'
+import { normalizeSurvey } from '@/lib/normalize'
 
 interface BuilderState {
   draft: Survey | null
@@ -41,7 +42,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
   isDirty: false,
   isSaving: false,
 
-  initDraft: (survey) => set({ draft: survey, isDirty: false }),
+  initDraft: (survey) => set({ draft: normalizeSurvey(survey), isDirty: false }),
   clearDraft: () => set({ draft: null, isDirty: false }),
   setIsSaving: (isSaving) => set({ isSaving }),
   setIsDirty: (isDirty) => set({ isDirty }),

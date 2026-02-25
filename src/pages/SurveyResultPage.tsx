@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { getSurveyById } from '@/services/surveyService'
+import { normalizeSurvey } from '@/lib/normalize'
 import type { Survey } from '@/types/survey'
 import ResultScreen from '@/components/responder/ResultScreen'
 
@@ -16,7 +17,7 @@ export default function SurveyResultPage() {
     if (!id) { navigate('/'); return }
     getSurveyById(id).then((s) => {
       if (!s) navigate('/')
-      else setSurvey(s)
+      else setSurvey(normalizeSurvey(s))
       setLoading(false)
     })
   }, [id, navigate])

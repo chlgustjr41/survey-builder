@@ -19,7 +19,7 @@ export default function ScheduleEditor() {
   const { t } = useTranslation()
   const { draft, updateMeta } = useBuilderStore()
   const [enabled, setEnabled] = useState(
-    !!(draft?.schedule.openAt || draft?.schedule.closeAt)
+    !!(draft?.schedule?.openAt || draft?.schedule?.closeAt)
   )
 
   if (!draft) return null

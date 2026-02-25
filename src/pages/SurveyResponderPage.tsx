@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { subscribeToSurvey } from '@/services/surveyService'
 import { submitResponse } from '@/services/responseService'
 import { calculateTotalScore, isSurveyOpen } from '@/lib/scoring'
+import { normalizeSurvey } from '@/lib/normalize'
 import type { Survey } from '@/types/survey'
 import type { Answer, ResponseInput } from '@/types/response'
 import IdentificationForm from '@/components/responder/IdentificationForm'
@@ -21,8 +22,9 @@ export default function SurveyResponderPage() {
 
   useEffect(() => {
     if (!id) return
-    const unsub = subscribeToSurvey(id, (s) => {
-      if (!s) { navigate('/'); return }
+    const unsub = subscribeToSurvey(id, (raw) => {
+      if (!raw) { navigate('/'); return }
+      const s = normalizeSurvey(raw)
       setSurvey(s)
       const { open, reason } = isSurveyOpen(s.status, s.schedule)
       if (!open) {
