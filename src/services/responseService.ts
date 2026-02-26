@@ -1,12 +1,27 @@
 import { ref, set, get, onValue, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
 import type { Response, ResponseInput, ResponseFilters } from '@/types/response'
+import { sanitizeForFirebase } from '@/lib/firebaseUtils'
 import { nanoid } from 'nanoid'
 
+function assertValidSubmission(input: ResponseInput): void {
+  if (!input.surveyId || typeof input.surveyId !== 'string') {
+    throw new Error('Invalid submission: surveyId is missing or not a string.')
+  }
+  if (!input.respondedAt || typeof input.respondedAt !== 'number') {
+    throw new Error('Invalid submission: respondedAt timestamp is missing.')
+  }
+  if (typeof input.totalScore !== 'number' || isNaN(input.totalScore)) {
+    throw new Error('Invalid submission: totalScore is not a valid number.')
+  }
+}
+
 export async function submitResponse(input: ResponseInput): Promise<Response> {
+  assertValidSubmission(input)
   const id = nanoid()
   const response: Response = { id, ...input }
-  await set(ref(db, `responses/${input.surveyId}/${id}`), response)
+  const sanitized = sanitizeForFirebase(response)
+  await set(ref(db, `responses/${sanitized.surveyId}/${id}`), sanitized)
   return response
 }
 

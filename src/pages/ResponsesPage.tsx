@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { getSurveyById } from '@/services/surveyService'
 import { subscribeToResponses } from '@/services/responseService'
+import { getErrorMessage } from '@/lib/errorMessage'
 import type { Survey } from '@/types/survey'
 import type { Response, ResponseFilters } from '@/types/response'
 import AppShell from '@/components/shared/AppShell'
@@ -22,7 +24,12 @@ export default function ResponsesPage() {
 
   useEffect(() => {
     if (!id) return
-    getSurveyById(id).then(setSurvey)
+    getSurveyById(id)
+      .then(setSurvey)
+      .catch((err) => {
+        const { message, detail } = getErrorMessage(err, 'Failed to load survey details. Scores may not display correctly.')
+        toast.error(message, { description: detail })
+      })
     const unsub = subscribeToResponses(id, setResponses)
     return unsub
   }, [id])

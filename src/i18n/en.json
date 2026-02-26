@@ -51,7 +51,8 @@
       "title": "Schedule",
       "openAt": "Open At",
       "closeAt": "Close At",
-      "noSchedule": "No schedule (always open when published)"
+      "noSchedule": "No schedule (always open when published)",
+      "error": "Open time must be before close time"
     },
     "identification": {
       "title": "Responder Identification",
@@ -107,12 +108,9 @@
     }
   },
   "questionType": {
-    "radio": "Single Choice",
-    "checkbox": "Multiple Choice",
-    "text-short": "Short Text",
-    "text-long": "Long Text",
-    "rating": "Rating Scale",
-    "tag-input": "Tag Input"
+    "text": "Text",
+    "choice": "Multiple Choice",
+    "scale": "Scale"
   },
   "responder": {
     "startSurvey": "Start Survey",
@@ -120,6 +118,7 @@
     "back": "Back",
     "submit": "Submit",
     "submitting": "Submitting...",
+    "continue": "Continue",
     "required": "This field is required",
     "surveyLocked": "This survey is not accepting responses right now.",
     "surveyNotStarted": "This survey hasn't opened yet.",
@@ -134,7 +133,10 @@
   },
   "result": {
     "yourScore": "Your Score",
-    "outOf": "out of"
+    "outOf": "out of",
+    "noRange": "Thank you for completing the survey!",
+    "sectionComplete": "Section Complete",
+    "sectionScore": "Section Score"
   },
   "responses": {
     "title": "Responses",
@@ -151,7 +153,12 @@
       "score": "Score",
       "actions": "Actions"
     },
-    "noResponses": "No responses yet."
+    "noResponses": "No responses yet.",
+    "noFiltersMatch": "No responses match the current filters.",
+    "detail": {
+      "responder": "Responder",
+      "answers": "Answers"
+    }
   },
   "common": {
     "cancel": "Cancel",

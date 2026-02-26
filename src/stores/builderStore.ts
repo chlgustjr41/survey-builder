@@ -19,7 +19,7 @@ interface BuilderState {
 
   // Sections
   addSection: () => void
-  updateSection: (sectionId: string, fields: Partial<Pick<Section, 'title'>>) => void
+  updateSection: (sectionId: string, fields: Partial<Pick<Section, 'title' | 'description' | 'resultConfig'>>) => void
   deleteSection: (sectionId: string) => void
   reorderSections: (newOrder: string[]) => void
   addBranchRule: (sectionId: string, rule: Omit<BranchRule, 'id'>) => void
@@ -27,6 +27,7 @@ interface BuilderState {
 
   // Questions
   addQuestion: (sectionId: string, type: QuestionType) => void
+  duplicateQuestion: (sectionId: string, questionId: string) => void
   updateQuestion: (questionId: string, fields: Partial<Question>) => void
   deleteQuestion: (sectionId: string, questionId: string) => void
   reorderQuestions: (sectionId: string, newOrder: string[]) => void
@@ -153,18 +154,26 @@ export const useBuilderStore = create<BuilderState>((set) => ({
       const section = state.draft.sections[sectionId]
       if (!section) return state
       const id = nanoid()
+
       const question: Question = {
         id,
         sectionId,
         type,
         prompt: '',
         required: false,
-        pointValue: 0,
-        ...(type === 'radio' || type === 'checkbox' ? { options: [] } : {}),
-        ...(type === 'checkbox' ? { checkboxConfig: { min: 1, max: 1 } } : {}),
-        ...(type === 'rating' ? { ratingConfig: { min: 1, max: 5 } } : {}),
-        ...(type === 'tag-input' ? { tagConfig: { placeholder: 'Add a tag...' } } : {}),
+        // Per-type defaults
+        ...(type === 'text' && {
+          textConfig: { size: 'short' },
+        }),
+        ...(type === 'choice' && {
+          options: [],
+          choiceConfig: { selectionMode: 'single' },
+        }),
+        ...(type === 'scale' && {
+          scaleConfig: { min: 1, max: 5, useValueAsPoints: false },
+        }),
       }
+
       return {
         draft: {
           ...state.draft,
@@ -172,6 +181,29 @@ export const useBuilderStore = create<BuilderState>((set) => ({
           sections: {
             ...state.draft.sections,
             [sectionId]: { ...section, questionOrder: [...section.questionOrder, id] },
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  duplicateQuestion: (sectionId, questionId) =>
+    set((state) => {
+      if (!state.draft) return state
+      const section = state.draft.sections[sectionId]
+      const original = state.draft.questions[questionId]
+      if (!section || !original) return state
+      const newId = nanoid()
+      const copy: Question = { ...original, id: newId }
+      const order = [...section.questionOrder]
+      order.splice(order.indexOf(questionId) + 1, 0, newId)
+      return {
+        draft: {
+          ...state.draft,
+          questions: { ...state.draft.questions, [newId]: copy },
+          sections: {
+            ...state.draft.sections,
+            [sectionId]: { ...section, questionOrder: order },
           },
         },
         isDirty: true,

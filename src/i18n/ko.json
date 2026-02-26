@@ -51,7 +51,8 @@
       "title": "일정",
       "openAt": "시작 시간",
       "closeAt": "종료 시간",
-      "noSchedule": "일정 없음 (게시 시 항상 열림)"
+      "noSchedule": "일정 없음 (게시 시 항상 열림)",
+      "error": "시작 시간은 종료 시간보다 빨라야 합니다"
     },
     "identification": {
       "title": "응답자 식별",
@@ -107,12 +108,9 @@
     }
   },
   "questionType": {
-    "radio": "단일 선택",
-    "checkbox": "복수 선택",
-    "text-short": "단답형",
-    "text-long": "장문형",
-    "rating": "평점 척도",
-    "tag-input": "태그 입력"
+    "text": "텍스트",
+    "choice": "객관식",
+    "scale": "척도"
   },
   "responder": {
     "startSurvey": "설문 시작",
@@ -120,6 +118,7 @@
     "back": "이전",
     "submit": "제출",
     "submitting": "제출 중...",
+    "continue": "계속",
     "required": "이 필드는 필수입니다",
     "surveyLocked": "현재 응답을 받지 않는 설문입니다.",
     "surveyNotStarted": "아직 시작되지 않은 설문입니다.",
@@ -134,7 +133,10 @@
   },
   "result": {
     "yourScore": "점수",
-    "outOf": "/"
+    "outOf": "/",
+    "noRange": "설문을 완료해 주셔서 감사합니다!",
+    "sectionComplete": "섹션 완료",
+    "sectionScore": "섹션 점수"
   },
   "responses": {
     "title": "응답",
@@ -151,7 +153,12 @@
       "score": "점수",
       "actions": "작업"
     },
-    "noResponses": "아직 응답이 없습니다."
+    "noResponses": "아직 응답이 없습니다.",
+    "noFiltersMatch": "현재 필터에 맞는 응답이 없습니다.",
+    "detail": {
+      "responder": "응답자",
+      "answers": "답변"
+    }
   },
   "common": {
     "cancel": "취소",

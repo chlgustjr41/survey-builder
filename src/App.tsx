@@ -29,7 +29,6 @@ export default function App() {
         {/* Protected routes */}
         <Route element={<AuthGuard />}>
           <Route path="/app" element={<SurveyListPage />} />
-          <Route path="/app/surveys/new" element={<SurveyBuilderPage />} />
           <Route path="/app/surveys/:id/edit" element={<SurveyBuilderPage />} />
           <Route path="/app/surveys/:id/responses" element={<ResponsesPage />} />
         </Route>

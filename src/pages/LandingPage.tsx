@@ -1,18 +1,35 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
+import { getErrorMessage, isUserCancelledAuth } from '@/lib/errorMessage'
 
 export default function LandingPage() {
   const { t } = useTranslation()
   const { user, loading, signIn } = useAuthStore()
   const navigate = useNavigate()
+  const [signingIn, setSigningIn] = useState(false)
 
   useEffect(() => {
     if (!loading && user) navigate('/app')
   }, [user, loading, navigate])
+
+  const handleSignIn = async () => {
+    setSigningIn(true)
+    try {
+      await signIn()
+    } catch (err) {
+      if (!isUserCancelledAuth(err)) {
+        const { message, detail } = getErrorMessage(err, 'Sign-in failed. Please try again.')
+        toast.error(message, { description: detail })
+      }
+    } finally {
+      setSigningIn(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 to-white px-4">
@@ -34,10 +51,10 @@ export default function LandingPage() {
         <Button
           size="lg"
           className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl text-base font-semibold shadow"
-          onClick={signIn}
-          disabled={loading}
+          onClick={handleSignIn}
+          disabled={loading || signingIn}
         >
-          {loading ? t('auth.signingIn') : t('auth.signIn')}
+          {signingIn ? t('auth.signingIn') : t('auth.signIn')}
         </Button>
       </motion.div>
     </div>

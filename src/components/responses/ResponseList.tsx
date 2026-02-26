@@ -108,7 +108,9 @@ export default function ResponseList({ responses, survey, filters, onFiltersChan
 
       {/* Response rows */}
       {filtered.length === 0 ? (
-        <p className="text-center text-sm text-gray-400 py-12">{t('responses.noResponses')}</p>
+        <p className="text-center text-sm text-gray-400 py-12">
+          {responses.length === 0 ? t('responses.noResponses') : t('responses.noFiltersMatch')}
+        </p>
       ) : (
         <div className="flex flex-col gap-2">
           {filtered.map((r) => {
