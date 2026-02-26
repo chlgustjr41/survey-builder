@@ -223,6 +223,11 @@ export function normalizeSurvey(survey: Survey): Survey {
     ...survey,
     sectionOrder:         survey.sectionOrder         ?? [],
     identificationFields: survey.identificationFields ?? [],
+    formatConfig: {
+      sectionIndex:  survey.formatConfig?.sectionIndex  ?? 'none',
+      questionIndex: survey.formatConfig?.questionIndex ?? 'none',
+      optionIndex:   survey.formatConfig?.optionIndex   ?? 'none',
+    },
     schedule: {
       openAt:  survey.schedule?.openAt  ?? null,
       closeAt: survey.schedule?.closeAt ?? null,

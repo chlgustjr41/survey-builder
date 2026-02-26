@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useBuilderStore } from '@/stores/builderStore'
 import type { Question, QuestionType } from '@/types/question'
+import { indexLabel } from '@/lib/utils'
 import TextEditor from './editors/TextEditor'
 import ChoiceEditor from './editors/ChoiceEditor'
 import ScaleEditor from './editors/ScaleEditor'
@@ -21,11 +22,14 @@ const TYPE_OPTIONS: { type: QuestionType; label: string; icon: React.ReactNode }
 interface Props {
   question: Question
   sectionId: string
+  questionIndex: number
 }
 
-export default function QuestionCard({ question, sectionId }: Props) {
+export default function QuestionCard({ question, sectionId, questionIndex }: Props) {
   const { t } = useTranslation()
-  const { updateQuestion, deleteQuestion, duplicateQuestion } = useBuilderStore()
+  const { draft, updateQuestion, deleteQuestion, duplicateQuestion } = useBuilderStore()
+  const fmt = draft?.formatConfig.questionIndex ?? 'none'
+  const questionPrefix = indexLabel(questionIndex, fmt)
   const [focused, setFocused] = useState(false)
   const [typeOpen, setTypeOpen] = useState(false)
   const promptRef = useRef<HTMLTextAreaElement>(null)
@@ -105,7 +109,10 @@ export default function QuestionCard({ question, sectionId }: Props) {
       <div className="px-6 pb-5 pt-1">
         {/* Question text + type selector */}
         <div className="flex gap-4 items-start mb-5">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex items-start gap-1.5">
+            {questionPrefix && (
+              <span className="text-base font-semibold text-orange-500 shrink-0 pt-3 leading-snug">{questionPrefix}</span>
+            )}
             <textarea
               ref={promptRef}
               value={question.prompt}
@@ -114,7 +121,7 @@ export default function QuestionCard({ question, sectionId }: Props) {
                 updateQuestion(question.id, { prompt: e.target.value })
               }}
               placeholder={t('builder.questionPrompt')}
-              className={`w-full text-base font-medium bg-gray-50 rounded-md px-3 pt-3 pb-2 outline-none
+              className={`flex-1 text-base font-medium bg-gray-50 rounded-md px-3 pt-3 pb-2 outline-none
                 border-b-2 transition-colors placeholder:text-gray-300 resize-none overflow-hidden leading-snug
                 ${hasEmptyPrompt
                   ? 'border-amber-400 bg-amber-50/40 placeholder:text-amber-300'

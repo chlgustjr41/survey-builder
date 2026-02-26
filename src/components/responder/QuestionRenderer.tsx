@@ -1,5 +1,7 @@
 import type { Question } from '@/types/question'
 import type { Answer } from '@/types/response'
+import type { IndexFormat } from '@/types/survey'
+import { indexLabel } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -9,9 +11,16 @@ interface Props {
   onChange: (value: Answer['value']) => void
   error?: string
   id?: string
+  questionIndex?: number
+  questionIndexFormat?: IndexFormat
+  optionIndexFormat?: IndexFormat
 }
 
-export default function QuestionRenderer({ question, value, onChange, error, id }: Props) {
+export default function QuestionRenderer({ question, value, onChange, error, id, questionIndex, questionIndexFormat, optionIndexFormat }: Props) {
+  const prefix = questionIndex !== undefined && questionIndexFormat
+    ? indexLabel(questionIndex, questionIndexFormat)
+    : ''
+
   return (
     <div
       id={id}
@@ -20,11 +29,12 @@ export default function QuestionRenderer({ question, value, onChange, error, id 
       }`}
     >
       <p className="font-medium text-gray-900 mb-4">
+        {prefix && <span className="text-orange-500 mr-1">{prefix}</span>}
         {question.prompt}
         {question.required && <span className="text-orange-500 ml-1">*</span>}
       </p>
 
-      <QuestionInput question={question} value={value} onChange={onChange} />
+      <QuestionInput question={question} value={value} onChange={onChange} optionIndexFormat={optionIndexFormat} />
 
       {error && (
         <p className="mt-3 text-xs font-medium text-red-500 flex items-center gap-1">
@@ -40,7 +50,8 @@ function QuestionInput({
   question,
   value,
   onChange,
-}: Omit<Props, 'error' | 'id'>) {
+  optionIndexFormat,
+}: Omit<Props, 'error' | 'id' | 'questionIndex' | 'questionIndexFormat'>) {
 
   // ── Text ──────────────────────────────────────────────────────────────────
   if (question.type === 'text') {
@@ -75,13 +86,18 @@ function QuestionInput({
     if (mode === 'single') {
       return (
         <div className="flex flex-col gap-2">
-          {opts.map((opt) => (
+          {opts.map((opt, optIdx) => (
             <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0
                 ${value === opt.id ? 'border-orange-500' : 'border-gray-300 group-hover:border-orange-300'}`}
               >
                 {value === opt.id && <div className="w-2 h-2 rounded-full bg-orange-500" />}
               </div>
+              {optionIndexFormat && optionIndexFormat !== 'none' && (
+                <span className="text-xs font-semibold text-orange-500 shrink-0 w-5 text-right">
+                  {indexLabel(optIdx, optionIndexFormat)}
+                </span>
+              )}
               <span className={`text-sm transition-colors
                 ${value === opt.id ? 'text-orange-600 font-medium' : 'text-gray-700'}`}
               >
@@ -110,15 +126,20 @@ function QuestionInput({
 
     return (
       <div className="flex flex-col gap-2">
-        {opts.map((opt) => {
+        {opts.map((opt, optIdx) => {
           const checked = selected.includes(opt.id)
           return (
             <label key={opt.id} className="flex items-center gap-3 cursor-pointer group" onClick={() => toggle(opt.id)}>
-              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors
+              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors shrink-0
                 ${checked ? 'border-orange-500 bg-orange-500' : 'border-gray-300 group-hover:border-orange-300'}`}
               >
                 {checked && <span className="text-white text-xs font-bold leading-none">✓</span>}
               </div>
+              {optionIndexFormat && optionIndexFormat !== 'none' && (
+                <span className="text-xs font-semibold text-orange-500 shrink-0 w-5 text-right">
+                  {indexLabel(optIdx, optionIndexFormat)}
+                </span>
+              )}
               <span className={`text-sm transition-colors
                 ${checked ? 'text-orange-600 font-medium' : 'text-gray-700'}`}
               >

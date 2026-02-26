@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import type { ResultConfig, Survey } from '@/types/survey'
 import type { Answer } from '@/types/response'
 import { resolveBranchTarget, calculateAnswerScore, matchAllScoreRanges } from '@/lib/scoring'
+import { indexLabel } from '@/lib/utils'
 import QuestionRenderer from './QuestionRenderer'
 
 interface Props {
@@ -166,13 +167,19 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
             className="flex flex-col gap-6"
           >
             {section.title && (
-              <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {(() => {
+                  const fmt = survey.formatConfig?.sectionIndex ?? 'none'
+                  const prefix = indexLabel(sectionIndex, fmt)
+                  return prefix ? <><span className="text-orange-500 mr-1.5">{prefix}</span>{section.title}</> : section.title
+                })()}
+              </h2>
             )}
             {section.description && (
               <p className="text-sm text-gray-500 -mt-3 leading-relaxed">{section.description}</p>
             )}
 
-            {section.questionOrder.map((qId) => {
+            {section.questionOrder.map((qId, qIdx) => {
               const question = survey.questions[qId]
               if (!question) return null
               return (
@@ -183,6 +190,9 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
                   value={answers[qId]?.value}
                   onChange={(val) => handleAnswer(qId, val)}
                   error={errors[qId]}
+                  questionIndex={qIdx}
+                  questionIndexFormat={survey.formatConfig?.questionIndex ?? 'none'}
+                  optionIndexFormat={survey.formatConfig?.optionIndex ?? 'none'}
                 />
               )
             })}

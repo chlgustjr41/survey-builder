@@ -15,7 +15,7 @@ interface BuilderState {
   setIsDirty: (dirty: boolean) => void
 
   // Survey meta
-  updateMeta: (fields: Partial<Pick<Survey, 'title' | 'description' | 'schedule' | 'resultConfig' | 'emailConfig' | 'identificationFields'>>) => void
+  updateMeta: (fields: Partial<Pick<Survey, 'title' | 'description' | 'schedule' | 'resultConfig' | 'emailConfig' | 'identificationFields' | 'formatConfig'>>) => void
 
   // Sections
   addSection: () => void
@@ -37,6 +37,7 @@ interface BuilderState {
 const DEFAULT_RESULT_CONFIG = { showScore: true, ranges: [] }
 const DEFAULT_EMAIL_CONFIG = { enabled: false, subject: '', bodyHtml: '' }
 const DEFAULT_SCHEDULE = { openAt: null, closeAt: null }
+const DEFAULT_FORMAT_CONFIG = { sectionIndex: 'none' as const, questionIndex: 'none' as const, optionIndex: 'none' as const }
 
 export const useBuilderStore = create<BuilderState>((set) => ({
   draft: null,
@@ -290,4 +291,4 @@ export const useBuilderStore = create<BuilderState>((set) => ({
     }),
 }))
 
-export { DEFAULT_RESULT_CONFIG, DEFAULT_EMAIL_CONFIG, DEFAULT_SCHEDULE }
+export { DEFAULT_RESULT_CONFIG, DEFAULT_EMAIL_CONFIG, DEFAULT_SCHEDULE, DEFAULT_FORMAT_CONFIG }

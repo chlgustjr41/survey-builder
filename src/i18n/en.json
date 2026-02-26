@@ -84,6 +84,12 @@
       "body": "Email Body (HTML)",
       "image": "Attachment Image (optional)"
     },
+    "format": {
+      "title": "Format",
+      "sections": "Sections",
+      "questions": "Questions",
+      "options": "Options"
+    },
     "branchRules": {
       "title": "Branch Logic",
       "add": "Add Rule",

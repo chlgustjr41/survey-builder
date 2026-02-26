@@ -1,24 +1,27 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Calendar, Users, Mail, ChevronDown } from 'lucide-react'
+import { Calendar, Users, Mail, ChevronDown, Hash } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useBuilderStore } from '@/stores/builderStore'
 import IdentificationFieldsEditor from './IdentificationFieldsEditor'
 import EmailConfigEditor from './EmailConfigEditor'
 import ScheduleEditor from './ScheduleEditor'
+import FormatControlEditor from './FormatControlEditor'
 
-type Panel = 'schedule' | 'identification' | 'email'
+type Panel = 'schedule' | 'identification' | 'email' | 'format'
 
 const PANELS: { id: Panel; icon: React.ReactNode; labelKey: string; fallback: string }[] = [
-  { id: 'schedule',       icon: <Calendar className="w-4 h-4" />, labelKey: '',                             fallback: 'Schedule'      },
+  { id: 'schedule',       icon: <Calendar className="w-4 h-4" />, labelKey: '',                          fallback: 'Schedule'      },
   { id: 'identification', icon: <Users    className="w-4 h-4" />, labelKey: 'builder.identification.title', fallback: 'Identification' },
   { id: 'email',          icon: <Mail     className="w-4 h-4" />, labelKey: 'builder.email.title',          fallback: 'Email'          },
+  { id: 'format',         icon: <Hash     className="w-4 h-4" />, labelKey: 'builder.format.title',         fallback: 'Format'         },
 ]
 
 const CONTENT: Record<Panel, React.ReactNode> = {
   schedule:       <ScheduleEditor />,
   identification: <IdentificationFieldsEditor />,
   email:          <EmailConfigEditor />,
+  format:         <FormatControlEditor />,
 }
 
 export default function BuilderSidebar() {

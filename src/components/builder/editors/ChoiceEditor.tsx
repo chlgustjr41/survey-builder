@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useBuilderStore } from '@/stores/builderStore'
 import type { Question, QuestionOption } from '@/types/question'
+import { indexLabel } from '@/lib/utils'
 
 // Callback ref that auto-sizes a textarea to fit its content on mount
 const autoResizeRef = (el: HTMLTextAreaElement | null) => {
@@ -15,7 +16,8 @@ interface Props { question: Question }
 
 export default function ChoiceEditor({ question }: Props) {
   const { t } = useTranslation()
-  const { updateQuestion } = useBuilderStore()
+  const { draft, updateQuestion } = useBuilderStore()
+  const fmt = draft?.formatConfig.optionIndex ?? 'none'
 
   const options  = question.options ?? []
   const cfg      = question.choiceConfig ?? { selectionMode: 'single' }
@@ -100,13 +102,20 @@ export default function ChoiceEditor({ question }: Props) {
       )}
 
       {/* Options list */}
-      {options.map((opt) => (
+      {options.map((opt, optIndex) => (
         <div key={opt.id} className="flex items-center gap-2">
           {/* Visual indicator: circle = single, square = range */}
           {isRange
             ? <div className="w-3 h-3 rounded border-2 border-gray-300 shrink-0" />
             : <div className="w-3 h-3 rounded-full border-2 border-gray-300 shrink-0" />
           }
+
+          {/* Option index prefix */}
+          {fmt !== 'none' && (
+            <span className="text-xs font-semibold text-orange-500 shrink-0 w-5 text-right">
+              {indexLabel(optIndex, fmt)}
+            </span>
+          )}
 
           {/* Label */}
           <textarea

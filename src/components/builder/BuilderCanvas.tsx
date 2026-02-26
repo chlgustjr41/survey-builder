@@ -80,13 +80,14 @@ export default function BuilderCanvas() {
           {/* ── Sections ──────────────────────────────────────────────── */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
             <SortableContext items={draft.sectionOrder} strategy={verticalListSortingStrategy}>
-              {draft.sectionOrder.map((sectionId) => {
+              {draft.sectionOrder.map((sectionId, sectionIndex) => {
                 const section = draft.sections[sectionId]
                 if (!section) return null
                 return (
                   <SectionCard
                     key={sectionId}
                     section={section}
+                    sectionIndex={sectionIndex}
                     onBranchEdit={setBranchSection}
                   />
                 )

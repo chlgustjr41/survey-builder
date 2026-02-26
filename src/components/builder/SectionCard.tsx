@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useBuilderStore } from '@/stores/builderStore'
 import type { ResultConfig, Section } from '@/types/survey'
+import { indexLabel } from '@/lib/utils'
 import type { QuestionType } from '@/types/question'
 import QuestionCard from './QuestionCard'
 import QuestionTypeMenu from './QuestionTypeMenu'
@@ -28,15 +29,18 @@ import ResultConfigEditor from './ResultConfigEditor'
 
 interface Props {
   section: Section
+  sectionIndex: number
   /** Called when the user clicks the branch-logic button.
    *  The dialog is rendered at BuilderCanvas level (outside all DnD/transform
    *  contexts) to avoid position:fixed containing-block issues. */
   onBranchEdit: (section: Section) => void
 }
 
-export default function SectionCard({ section, onBranchEdit }: Props) {
+export default function SectionCard({ section, sectionIndex, onBranchEdit }: Props) {
   const { t } = useTranslation()
   const { draft, updateSection, deleteSection, addQuestion, reorderQuestions } = useBuilderStore()
+  const fmt = draft?.formatConfig.sectionIndex ?? 'none'
+  const sectionPrefix = indexLabel(sectionIndex, fmt)
   const [collapsed, setCollapsed]         = useState(false)
   const [resultOpen, setResultOpen]       = useState(false)
 
@@ -94,6 +98,11 @@ export default function SectionCard({ section, onBranchEdit }: Props) {
               <ChevronDown className="w-4 h-4" />
             </motion.span>
           </button>
+
+          {/* Section index prefix */}
+          {sectionPrefix && (
+            <span className="text-sm font-semibold text-orange-500 shrink-0">{sectionPrefix}</span>
+          )}
 
           {/* Section title */}
           <Input
@@ -213,7 +222,7 @@ export default function SectionCard({ section, onBranchEdit }: Props) {
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleQuestionDragEnd}>
                 <SortableContext items={section.questionOrder} strategy={verticalListSortingStrategy}>
                   <AnimatePresence initial={false}>
-                    {section.questionOrder.map((qId) => {
+                    {section.questionOrder.map((qId, questionIndex) => {
                       const question = draft?.questions[qId]
                       if (!question) return null
                       return (
@@ -226,7 +235,7 @@ export default function SectionCard({ section, onBranchEdit }: Props) {
                           exit={{ opacity: 0, y: -6 }}
                           transition={{ duration: 0.18, ease: 'easeOut' }}
                         >
-                          <QuestionCard question={question} sectionId={section.id} />
+                          <QuestionCard question={question} sectionId={section.id} questionIndex={questionIndex} />
                         </motion.div>
                       )
                     })}

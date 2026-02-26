@@ -84,6 +84,12 @@
       "body": "이메일 본문 (HTML)",
       "image": "첨부 이미지 (선택)"
     },
+    "format": {
+      "title": "형식",
+      "sections": "섹션",
+      "questions": "질문",
+      "options": "옵션"
+    },
     "branchRules": {
       "title": "분기 로직",
       "add": "규칙 추가",
