@@ -1,16 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { Plus, CheckSquare, Circle, AlignLeft, AlignJustify, Star, Tag } from 'lucide-react'
+import { Plus, AlignLeft, ListChecks, BarChart2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { QuestionType } from '@/types/question'
 
 const TYPES: Array<{ type: QuestionType; icon: React.ReactNode; labelKey: string }> = [
-  { type: 'radio', icon: <Circle className="w-4 h-4" />, labelKey: 'questionType.radio' },
-  { type: 'checkbox', icon: <CheckSquare className="w-4 h-4" />, labelKey: 'questionType.checkbox' },
-  { type: 'text-short', icon: <AlignLeft className="w-4 h-4" />, labelKey: 'questionType.text-short' },
-  { type: 'text-long', icon: <AlignJustify className="w-4 h-4" />, labelKey: 'questionType.text-long' },
-  { type: 'rating', icon: <Star className="w-4 h-4" />, labelKey: 'questionType.rating' },
-  { type: 'tag-input', icon: <Tag className="w-4 h-4" />, labelKey: 'questionType.tag-input' },
+  { type: 'text',   icon: <AlignLeft    className="w-4 h-4" />, labelKey: 'questionType.text'   },
+  { type: 'choice', icon: <ListChecks   className="w-4 h-4" />, labelKey: 'questionType.choice' },
+  { type: 'scale',  icon: <BarChart2    className="w-4 h-4" />, labelKey: 'questionType.scale'  },
 ]
 
 interface Props { onSelect: (type: QuestionType) => void }
@@ -25,7 +22,7 @@ export default function QuestionTypeMenu({ onSelect }: Props) {
           {t('builder.addQuestion')}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-1" align="start">
+      <PopoverContent className="w-44 p-1" align="start">
         {TYPES.map(({ type, icon, labelKey }) => (
           <button
             key={type}

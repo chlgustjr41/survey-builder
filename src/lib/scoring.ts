@@ -3,24 +3,35 @@ import type { Answer, Response } from '@/types/response'
 import type { ScoreRange } from '@/types/survey'
 
 export function calculateAnswerScore(answer: Answer, question: Question): number {
-  if (!question.options) return 0
+  // ── Choice: points live at option level ─────────────────────────────────────
+  if (question.type === 'choice') {
+    if (!question.options || question.options.length === 0) return 0
 
-  if (question.type === 'radio') {
-    const selected = question.options.find(o => o.id === answer.value)
-    return selected?.points ?? 0
+    const mode = question.choiceConfig?.selectionMode ?? 'single'
+
+    if (mode === 'single') {
+      // value is the selected option id (string)
+      const selected = question.options.find((o) => o.id === answer.value)
+      return selected?.points ?? 0
+    } else {
+      // range mode — value is an array of selected option ids
+      if (!Array.isArray(answer.value)) return 0
+      return answer.value.reduce((sum, optId) => {
+        const opt = question.options?.find((o) => o.id === optId)
+        return sum + (opt?.points ?? 0)
+      }, 0)
+    }
   }
 
-  if (question.type === 'checkbox' && Array.isArray(answer.value)) {
-    return answer.value.reduce((sum, optId) => {
-      const opt = question.options?.find(o => o.id === optId)
-      return sum + (opt?.points ?? 0)
-    }, 0)
+  // ── Scale: selected value IS the points when useValueAsPoints is true ───────
+  if (question.type === 'scale') {
+    if (question.scaleConfig?.useValueAsPoints && typeof answer.value === 'number') {
+      return answer.value
+    }
+    return 0
   }
 
-  if (question.type === 'rating' && typeof answer.value === 'number') {
-    return answer.value
-  }
-
+  // ── Text: no scoring ────────────────────────────────────────────────────────
   return 0
 }
 
@@ -35,18 +46,34 @@ export function calculateTotalScore(
   }, 0)
 }
 
+/** Returns the first matching range (kept for legacy callers). */
 export function matchScoreRange(
   score: number,
   ranges: ScoreRange[]
 ): ScoreRange | null {
-  return ranges.find(r => score >= r.min && score <= r.max) ?? null
+  return ranges.find((r) => score >= r.min && score <= r.max) ?? null
+}
+
+/** Returns ALL ranges whose [min, max] window contains the score, in definition order. */
+export function matchAllScoreRanges(
+  score: number,
+  ranges: ScoreRange[]
+): ScoreRange[] {
+  return ranges.filter((r) => score >= r.min && score <= r.max)
 }
 
 export function getMaxPossibleScore(questions: Record<string, Question>): number {
   return Object.values(questions).reduce((total, q) => {
-    if (!q.options || q.options.length === 0) return total
-    const max = Math.max(...q.options.map(o => o.points))
-    return total + max
+    // Choice: max is the highest single option point value
+    if (q.type === 'choice' && q.options && q.options.length > 0) {
+      const max = Math.max(...q.options.map((o) => o.points))
+      return total + (max > 0 ? max : 0)
+    }
+    // Scale: max is the top of the scale when useValueAsPoints is on
+    if (q.type === 'scale' && q.scaleConfig?.useValueAsPoints) {
+      return total + (q.scaleConfig.max ?? 5)
+    }
+    return total
   }, 0)
 }
 

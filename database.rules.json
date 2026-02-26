@@ -6,16 +6,39 @@
         ".write": "$uid === auth.uid"
       }
     },
+
     "surveys": {
-      ".read": true,
-      ".indexOn": ["authorId"],
-      "$surveyId": {
-        ".write": "auth != null && (data.child('authorId').val() === auth.uid || !data.exists())"
+      "$uid": {
+        /*
+         * Only the owner can list or read their surveys.
+         * Exception: published / locked surveys are readable by anyone
+         * (needed for respondents who only know the surveyId).
+         * Firebase RTDB child rules CAN grant access denied by the parent.
+         */
+        ".read":  "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "$surveyId": {
+          ".read": "data.child('status').val() === 'published' || data.child('status').val() === 'locked'"
+        }
       }
     },
+
+    "surveyIndex": {
+      /*
+       * Lightweight lookup table: surveyId → { authorId }.
+       * Public read so unauthenticated respondents can resolve the owner UID
+       * before reading the full survey from /surveys/$uid/$surveyId.
+       * Write: only the owner may create their own index entry or delete it.
+       */
+      "$surveyId": {
+        ".read": true,
+        ".write": "auth != null && (data.child('authorId').val() === auth.uid || (!data.exists() && newData.child('authorId').val() === auth.uid))"
+      }
+    },
+
     "responses": {
       "$surveyId": {
-        ".read": "auth != null",
+        ".read":  "auth != null",
         ".write": true
       }
     }

@@ -99,12 +99,9 @@
     }
   },
   "questionType": {
-    "radio": "Single Choice",
-    "checkbox": "Multiple Choice",
-    "text-short": "Short Text",
-    "text-long": "Long Text",
-    "rating": "Rating Scale",
-    "tag-input": "Tag Input"
+    "text": "Text",
+    "choice": "Multiple Choice",
+    "scale": "Scale"
   },
   "responder": {
     "startSurvey": "Start Survey",
@@ -112,6 +109,7 @@
     "back": "Back",
     "submit": "Submit",
     "submitting": "Submitting...",
+    "continue": "Continue",
     "required": "This field is required",
     "surveyLocked": "This survey is not accepting responses right now.",
     "surveyNotStarted": "This survey hasn't opened yet.",
@@ -127,7 +125,9 @@
   "result": {
     "yourScore": "Your Score",
     "outOf": "out of",
-    "noRange": "Thank you for completing the survey!"
+    "noRange": "Thank you for completing the survey!",
+    "sectionComplete": "Section Complete",
+    "sectionScore": "Section Score"
   },
   "responses": {
     "title": "Responses",

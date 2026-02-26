@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, QrCode, Send, Lock, Unlock, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, QrCode, Send, Lock, Unlock, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { QRCodeCanvas } from 'qrcode.react'
@@ -13,9 +14,9 @@ import { useState } from 'react'
 interface Props { onSave: () => void }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-600',
+  draft:     'bg-gray-100 text-gray-600',
   published: 'bg-green-100 text-green-700',
-  locked: 'bg-orange-100 text-orange-700',
+  locked:    'bg-orange-100 text-orange-700',
 }
 
 export default function BuilderHeader({ onSave }: Props) {
@@ -34,12 +35,10 @@ export default function BuilderHeader({ onSave }: Props) {
   const validateForPublish = (): string[] => {
     const issues: string[] = []
 
-    // 1. Title required
     if (!draft.title.trim()) {
       issues.push('Survey title is required — add it in the Settings panel on the left.')
     }
 
-    // 2. Must have at least one question
     const totalQuestions = draft.sectionOrder.reduce(
       (n, sid) => n + (draft.sections[sid]?.questionOrder?.length ?? 0), 0
     )
@@ -47,7 +46,6 @@ export default function BuilderHeader({ onSave }: Props) {
       issues.push('Add at least one question to the canvas before publishing.')
     }
 
-    // 3. Empty question prompts
     const allQuestions = Object.values(draft.questions)
     const emptyPrompts = allQuestions.filter((q) => !q.prompt.trim())
     if (emptyPrompts.length === 1) {
@@ -56,15 +54,13 @@ export default function BuilderHeader({ onSave }: Props) {
       issues.push(`${emptyPrompts.length} questions are missing prompt text — look for amber badges on each card.`)
     }
 
-    // 4. Radio / Checkbox need ≥ 2 options
     allQuestions.forEach((q) => {
-      if ((q.type === 'radio' || q.type === 'checkbox') && (q.options ?? []).length < 2) {
+      if (q.type === 'choice' && (q.options ?? []).length < 2) {
         const label = q.prompt.trim() || 'Unnamed question'
         issues.push(`"${label}" needs at least 2 answer options (currently has ${(q.options ?? []).length}).`)
       }
     })
 
-    // 5. Empty option labels
     const emptyLabelCount = allQuestions.reduce(
       (n, q) => n + (q.options?.filter((o) => !o.label.trim()).length ?? 0), 0
     )
@@ -74,7 +70,6 @@ export default function BuilderHeader({ onSave }: Props) {
       issues.push(`${emptyLabelCount} answer options have empty labels — fill them in or delete them.`)
     }
 
-    // 6. Schedule conflict
     const { openAt, closeAt } = draft.schedule
     if (openAt && closeAt && openAt >= closeAt) {
       issues.push('Schedule error: open time must be before close time (check Settings → Schedule).')
@@ -92,7 +87,7 @@ export default function BuilderHeader({ onSave }: Props) {
     }
     try {
       await onSave()
-      await publishSurvey(draft.id)
+      await publishSurvey(draft.id, draft.authorId)
       updateMeta({ status: 'published' } as never)
       toast.success('Survey published!')
       setShowQR(true)
@@ -105,7 +100,7 @@ export default function BuilderHeader({ onSave }: Props) {
 
   const handleLock = async () => {
     try {
-      await lockSurvey(draft.id)
+      await lockSurvey(draft.id, draft.authorId)
       updateMeta({ status: 'locked' } as never)
       toast.success('Survey locked.')
     } catch (err) {
@@ -117,7 +112,7 @@ export default function BuilderHeader({ onSave }: Props) {
 
   const handleUnlock = async () => {
     try {
-      await unlockSurvey(draft.id)
+      await unlockSurvey(draft.id, draft.authorId)
       updateMeta({ status: 'published' } as never)
       toast.success('Survey unlocked.')
     } catch (err) {
@@ -129,7 +124,14 @@ export default function BuilderHeader({ onSave }: Props) {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 px-4 h-14 flex items-center gap-3 z-30">
+      {/* ⚠ opacity-only — y/x on a structural element creates a CSS containing
+          block that shifts position:fixed dialogs off-centre on the page.   */}
+      <motion.header
+        className="bg-white border-b border-gray-200 px-4 h-14 flex items-center gap-3 z-30"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
+      >
         <Button variant="ghost" size="icon" onClick={() => navigate('/app')}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
@@ -138,14 +140,56 @@ export default function BuilderHeader({ onSave }: Props) {
           <span className={`font-semibold truncate max-w-xs ${!draft.title.trim() ? 'text-gray-400 italic' : 'text-gray-800'}`}>
             {draft.title.trim() || 'Untitled Survey'}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLORS[draft.status]}`}>
-            {t(`survey.status.${draft.status}`)}
-          </span>
-          {isDirty && (
-            <span className="text-xs text-gray-400 shrink-0">{t('builder.unsavedChanges')}</span>
-          )}
+
+          {/* Status pill */}
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={draft.status}
+              className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLORS[draft.status]}`}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.15 }}
+            >
+              {t(`survey.status.${draft.status}`)}
+            </motion.span>
+          </AnimatePresence>
+
+          {/* Dirty / saving indicator */}
+          <AnimatePresence>
+            {isSaving ? (
+              <motion.span
+                key="saving"
+                className="flex items-center gap-1 text-xs text-orange-500 shrink-0"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Loader2 className="w-3 h-3 animate-spin" />
+                {t('builder.saving')}
+              </motion.span>
+            ) : isDirty ? (
+              <motion.span
+                key="dirty"
+                className="flex items-center gap-1.5 text-xs text-gray-400 shrink-0"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                {/* Pulsing dot */}
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-300 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-400" />
+                </span>
+                {t('builder.unsavedChanges')}
+              </motion.span>
+            ) : null}
+          </AnimatePresence>
         </div>
 
+        {/* Action buttons */}
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -156,36 +200,61 @@ export default function BuilderHeader({ onSave }: Props) {
             {isSaving ? t('builder.saving') : t('builder.save')}
           </Button>
 
-          {draft.status === 'draft' && (
-            <Button
-              size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-              onClick={handlePublish}
-            >
-              <Send className="w-3.5 h-3.5 mr-1" />
-              {t('survey.publish')}
-            </Button>
-          )}
-          {draft.status === 'published' && (
-            <>
-              <Button variant="outline" size="sm" onClick={() => setShowQR(true)}>
-                <QrCode className="w-3.5 h-3.5 mr-1" />
-                {t('survey.qrCode')}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleLock} className="text-orange-600 border-orange-300">
-                <Lock className="w-3.5 h-3.5 mr-1" />
-                {t('survey.lock')}
-              </Button>
-            </>
-          )}
-          {draft.status === 'locked' && (
-            <Button variant="outline" size="sm" onClick={handleUnlock}>
-              <Unlock className="w-3.5 h-3.5 mr-1" />
-              {t('survey.unlock')}
-            </Button>
-          )}
+          <AnimatePresence mode="wait">
+            {draft.status === 'draft' && (
+              <motion.div
+                key="publish-btn"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Button
+                  size="sm"
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={handlePublish}
+                >
+                  <Send className="w-3.5 h-3.5 mr-1" />
+                  {t('survey.publish')}
+                </Button>
+              </motion.div>
+            )}
+            {draft.status === 'published' && (
+              <motion.div
+                key="lock-btns"
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Button variant="outline" size="sm" onClick={() => setShowQR(true)}>
+                  <QrCode className="w-3.5 h-3.5 mr-1" />
+                  {t('survey.qrCode')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLock} className="text-orange-600 border-orange-300">
+                  <Lock className="w-3.5 h-3.5 mr-1" />
+                  {t('survey.lock')}
+                </Button>
+              </motion.div>
+            )}
+            {draft.status === 'locked' && (
+              <motion.div
+                key="unlock-btn"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Button variant="outline" size="sm" onClick={handleUnlock}>
+                  <Unlock className="w-3.5 h-3.5 mr-1" />
+                  {t('survey.unlock')}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </header>
+      </motion.header>
 
       {/* Validation errors dialog */}
       <Dialog open={showErrors} onOpenChange={setShowErrors}>

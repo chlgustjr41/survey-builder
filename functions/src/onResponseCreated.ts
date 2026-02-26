@@ -125,7 +125,7 @@ export const onResponseCreated = functions.database.onValueCreated(
 
     try {
       await resend.emails.send({
-        from: 'Survey Builder <noreply@yourdomain.com>',
+        from: 'Survey Builder <chlgustjr41@gmail.com>',
         to: email,
         subject: emailConfig.subject || `Your results for "${survey.title}"`,
         html,

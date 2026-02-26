@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
 import type { Survey } from '@/types/survey'
-import { matchScoreRange, getMaxPossibleScore } from '@/lib/scoring'
+import { matchAllScoreRanges, getMaxPossibleScore } from '@/lib/scoring'
 
 interface Props {
   survey: Survey
@@ -13,7 +13,7 @@ export default function ResultScreen({ survey, totalScore }: Props) {
   const { t } = useTranslation()
   const { resultConfig } = survey
   const maxScore = getMaxPossibleScore(survey.questions)
-  const range = matchScoreRange(totalScore, resultConfig.ranges)
+  const matchedRanges = matchAllScoreRanges(totalScore, resultConfig.ranges)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center px-4">
@@ -40,19 +40,24 @@ export default function ResultScreen({ survey, totalScore }: Props) {
             </div>
           )}
 
-          {range ? (
-            <>
-              {range.imageUrl && (
-                <img
-                  src={range.imageUrl}
-                  alt="Result"
-                  className="w-full rounded-xl object-cover max-h-48"
-                />
-              )}
-              {range.message && (
-                <p className="text-gray-700 text-sm text-center leading-relaxed">{range.message}</p>
-              )}
-            </>
+          {matchedRanges.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {matchedRanges.map((range, i) => (
+                <div key={range.id} className="flex flex-col gap-2">
+                  {i > 0 && <div className="border-t border-gray-100" />}
+                  {range.imageUrl && (
+                    <img
+                      src={range.imageUrl}
+                      alt="Result"
+                      className="w-full rounded-xl object-cover max-h-48"
+                    />
+                  )}
+                  {range.message && (
+                    <p className="text-gray-700 text-sm text-center leading-relaxed">{range.message}</p>
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
             resultConfig.ranges.length > 0 && (
               <p className="text-gray-500 text-sm text-center leading-relaxed">{t('result.noRange')}</p>

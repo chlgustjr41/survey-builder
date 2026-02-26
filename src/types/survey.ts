@@ -62,6 +62,8 @@ export interface BranchRule {
 export interface Section {
   id: string
   title: string
+  description?: string
+  resultConfig?: ResultConfig
   questionOrder: string[]
   branchRules: BranchRule[]
 }

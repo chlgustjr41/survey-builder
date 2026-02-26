@@ -1,10 +1,10 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useBuilderStore } from '@/stores/builderStore'
-import { createSurvey, getSurveyById, saveSurvey } from '@/services/surveyService'
+import { getSurveyById, saveSurvey } from '@/services/surveyService'
 import { getErrorMessage } from '@/lib/errorMessage'
 import BuilderCanvas from '@/components/builder/BuilderCanvas'
 import BuilderSidebar from '@/components/builder/BuilderSidebar'
@@ -17,19 +17,35 @@ export default function SurveyBuilderPage() {
   const { user } = useAuthStore()
   const { draft, initDraft, isDirty, setIsSaving, setIsDirty } = useBuilderStore()
 
+  /**
+   * Tracks the survey ID that has been loaded into the builder store so we never
+   * call initDraft() twice for the same survey (e.g. on fast re-renders / StrictMode).
+   */
+  const loadedIdRef = useRef<string | null>(null)
+
   useEffect(() => {
-    if (!user) return
-    if (id) {
-      getSurveyById(id).then((survey) => {
-        if (survey) initDraft(survey)
-        else navigate('/app')
-      })
-    } else {
-      createSurvey(user.uid).then((survey) => {
-        initDraft(survey)
-        navigate(`/app/surveys/${survey.id}/edit`, { replace: true })
-      })
+    // Survey ID is always required — redirect if missing
+    if (!user || !id) {
+      navigate('/app', { replace: true })
+      return
     }
+
+    // Already loaded this survey — skip re-fetch to preserve any unsaved edits
+    if (loadedIdRef.current === id) return
+
+    let cancelled = false
+
+    getSurveyById(id).then((survey) => {
+      if (cancelled) return
+      if (survey) {
+        loadedIdRef.current = id
+        initDraft(survey)
+      } else {
+        navigate('/app', { replace: true })
+      }
+    })
+
+    return () => { cancelled = true }
   }, [id, user, initDraft, navigate])
 
   // Core save — silent=true for auto-save (no toast noise every 2s)
@@ -64,7 +80,7 @@ export default function SurveyBuilderPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-100">
       <BuilderHeader onSave={handleSave} />
       <div className="flex flex-1 overflow-hidden">
         <BuilderSidebar />

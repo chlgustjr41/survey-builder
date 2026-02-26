@@ -64,16 +64,18 @@ export default function ResponseDetail({ response, survey }: Props) {
 }
 
 function AnswerDisplay({ answer, question }: { answer: import('@/types/response').Answer; question: import('@/types/question').Question }) {
-  if (Array.isArray(answer.value)) {
-    if (question.type === 'checkbox') {
+  if (question.type === 'choice') {
+    if (Array.isArray(answer.value)) {
+      // Multi-select (range mode): array of selected option IDs
       const labels = (answer.value as string[]).map((id) => question.options?.find((o) => o.id === id)?.label ?? id)
       return <span className="text-gray-600">{labels.join(', ')}</span>
     }
-    return <span className="text-gray-600">{(answer.value as string[]).join(', ')}</span>
-  }
-  if (question.type === 'radio') {
+    // Single-select: one option ID
     const label = question.options?.find((o) => o.id === answer.value)?.label ?? String(answer.value)
     return <span className="text-gray-600">{label}</span>
+  }
+  if (Array.isArray(answer.value)) {
+    return <span className="text-gray-600">{(answer.value as string[]).join(', ')}</span>
   }
   return <span className="text-gray-600">{String(answer.value)}</span>
 }
