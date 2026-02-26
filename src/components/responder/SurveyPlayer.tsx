@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import type { Survey } from '@/types/survey'
 import type { Answer } from '@/types/response'
 import { resolveBranchTarget, calculateAnswerScore } from '@/lib/scoring'
+import { indexLabel } from '@/lib/utils'
 import QuestionRenderer from './QuestionRenderer'
 
 interface Props {
@@ -116,10 +117,15 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
             className="flex flex-col gap-6"
           >
             {section.title && (
-              <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {survey.formatConfig?.sectionIndex && survey.formatConfig.sectionIndex !== 'none' && (
+                  <span className="mr-1">{indexLabel(sectionIndex, survey.formatConfig.sectionIndex)}</span>
+                )}
+                {section.title}
+              </h2>
             )}
 
-            {section.questionOrder.map((qId) => {
+            {section.questionOrder.map((qId, qIndex) => {
               const question = survey.questions[qId]
               if (!question) return null
               return (
@@ -127,6 +133,9 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
                   key={qId}
                   id={`question-${qId}`}
                   question={question}
+                  questionIndex={qIndex}
+                  questionIndexFormat={survey.formatConfig?.questionIndex ?? 'none'}
+                  optionIndexFormat={survey.formatConfig?.optionIndex ?? 'none'}
                   value={answers[qId]?.value}
                   onChange={(val) => handleAnswer(qId, val)}
                   error={errors[qId]}

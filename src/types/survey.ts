@@ -44,6 +44,14 @@ export interface SurveySchedule {
   closeAt: number | null
 }
 
+export type IndexFormat = 'none' | 'numeric' | 'alpha'
+
+export interface FormatConfig {
+  sectionIndex: IndexFormat
+  questionIndex: IndexFormat
+  optionIndex: IndexFormat
+}
+
 export type BranchRuleType = 'answer' | 'score'
 export type ScoreOperator = 'gte' | 'lte'
 
@@ -73,6 +81,7 @@ export interface Survey {
   description: string
   status: SurveyStatus
   schedule: SurveySchedule
+  formatConfig: FormatConfig
   createdAt: number
   updatedAt: number
   publishedAt: number | null

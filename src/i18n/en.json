@@ -95,6 +95,15 @@
       "jumpTo": "jump to",
       "ifScore": "If running score",
       "threshold": "score threshold"
+    },
+    "format": {
+      "title": "Format Control",
+      "sections": "Section Indexing",
+      "questions": "Question Indexing",
+      "options": "Option Indexing",
+      "none": "None",
+      "numeric": "1 2 3",
+      "alpha": "A B C"
     }
   },
   "questionType": {

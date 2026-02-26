@@ -24,6 +24,7 @@ export async function createSurvey(authorId: string): Promise<Survey> {
     description: '',
     status: 'draft',
     schedule: { openAt: null, closeAt: null },
+    formatConfig: { sectionIndex: 'none', questionIndex: 'none', optionIndex: 'none' },
     createdAt: now,
     updatedAt: now,
     publishedAt: null,

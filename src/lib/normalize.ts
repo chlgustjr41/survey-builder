@@ -43,6 +43,11 @@ export function normalizeSurvey(survey: Survey): Survey {
       bodyHtml: survey.emailConfig?.bodyHtml ?? '',
       imageUrl: survey.emailConfig?.imageUrl,
     },
+    formatConfig: {
+      sectionIndex: survey.formatConfig?.sectionIndex ?? 'none',
+      questionIndex: survey.formatConfig?.questionIndex ?? 'none',
+      optionIndex: survey.formatConfig?.optionIndex ?? 'none',
+    },
     sections: normalizedSections,
     questions: normalizedQuestions,
   }

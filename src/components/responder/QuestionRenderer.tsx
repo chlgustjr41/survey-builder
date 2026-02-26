@@ -6,17 +6,23 @@ import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 import type { Question } from '@/types/question'
 import type { Answer } from '@/types/response'
+import type { IndexFormat } from '@/types/survey'
+import { indexLabel } from '@/lib/utils'
 
 interface Props {
   question: Question
+  questionIndex?: number
+  questionIndexFormat?: IndexFormat
+  optionIndexFormat?: IndexFormat
   value: Answer['value'] | undefined
   onChange: (value: Answer['value']) => void
   error?: string
   id?: string
 }
 
-export default function QuestionRenderer({ question, value, onChange, error, id }: Props) {
+export default function QuestionRenderer({ question, questionIndex, questionIndexFormat = 'none', optionIndexFormat = 'none', value, onChange, error, id }: Props) {
   const { t } = useTranslation()
+  const prefix = questionIndex !== undefined ? indexLabel(questionIndex, questionIndexFormat) : ''
 
   return (
     <div
@@ -26,10 +32,11 @@ export default function QuestionRenderer({ question, value, onChange, error, id 
       }`}
     >
       <p className="font-medium text-gray-900 mb-4">
+        {prefix && <span className="mr-1">{prefix}</span>}
         {question.prompt}
         {question.required && <span className="text-orange-500 ml-1">*</span>}
       </p>
-      <QuestionInput question={question} value={value} onChange={onChange} t={t} />
+      <QuestionInput question={question} optionIndexFormat={optionIndexFormat} value={value} onChange={onChange} t={t} />
       {error && (
         <p className="mt-3 text-xs font-medium text-red-500 flex items-center gap-1">
           <span>⚠</span> {error}
@@ -39,16 +46,25 @@ export default function QuestionRenderer({ question, value, onChange, error, id 
   )
 }
 
-function QuestionInput({ question, value, onChange, t }: Omit<Props, 'error' | 'id'> & { t: (k: string, options?: Record<string, unknown>) => string }) {
+interface QuestionInputProps {
+  question: Question
+  optionIndexFormat: IndexFormat
+  value: Answer['value'] | undefined
+  onChange: (value: Answer['value']) => void
+  t: (k: string, options?: Record<string, unknown>) => string
+}
+
+function QuestionInput({ question, optionIndexFormat, value, onChange, t }: QuestionInputProps) {
   if (question.type === 'radio') {
     return (
       <div className="flex flex-col gap-2">
-        {(question.options ?? []).map((opt) => (
+        {(question.options ?? []).map((opt, idx) => (
           <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${value === opt.id ? 'border-orange-500' : 'border-gray-300'}`}>
               {value === opt.id && <div className="w-2 h-2 rounded-full bg-orange-500" />}
             </div>
             <span className={`text-sm transition-colors ${value === opt.id ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+              {optionIndexFormat !== 'none' && <span className="mr-1">{indexLabel(idx, optionIndexFormat)}</span>}
               {opt.label}
             </span>
             <input type="radio" className="hidden" checked={value === opt.id} onChange={() => onChange(opt.id)} />
@@ -66,14 +82,17 @@ function QuestionInput({ question, value, onChange, t }: Omit<Props, 'error' | '
     }
     return (
       <div className="flex flex-col gap-2">
-        {(question.options ?? []).map((opt) => {
+        {(question.options ?? []).map((opt, idx) => {
           const checked = selected.includes(opt.id)
           return (
             <label key={opt.id} className="flex items-center gap-3 cursor-pointer" onClick={() => toggle(opt.id)}>
               <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${checked ? 'border-orange-500 bg-orange-500' : 'border-gray-300'}`}>
                 {checked && <span className="text-white text-xs font-bold">✓</span>}
               </div>
-              <span className={`text-sm ${checked ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>{opt.label}</span>
+              <span className={`text-sm ${checked ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                {optionIndexFormat !== 'none' && <span className="mr-1">{indexLabel(idx, optionIndexFormat)}</span>}
+                {opt.label}
+              </span>
             </label>
           )
         })}

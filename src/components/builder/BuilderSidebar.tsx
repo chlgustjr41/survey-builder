@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Settings, Users, BarChart2, Mail, ChevronDown, ChevronRight } from 'lucide-react'
+import { Settings, Users, BarChart2, Mail, ChevronDown, ChevronRight, ListOrdered } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useBuilderStore } from '@/stores/builderStore'
@@ -8,8 +8,9 @@ import IdentificationFieldsEditor from './IdentificationFieldsEditor'
 import ResultConfigEditor from './ResultConfigEditor'
 import EmailConfigEditor from './EmailConfigEditor'
 import ScheduleEditor from './ScheduleEditor'
+import FormatConfigEditor from './FormatConfigEditor'
 
-type Panel = 'settings' | 'identification' | 'result' | 'email'
+type Panel = 'settings' | 'identification' | 'result' | 'email' | 'format'
 
 export default function BuilderSidebar() {
   const { t } = useTranslation()
@@ -80,6 +81,16 @@ export default function BuilderSidebar() {
         onToggle={() => toggle('email')}
       >
         <EmailConfigEditor />
+      </SidebarSection>
+
+      {/* Format Control */}
+      <SidebarSection
+        icon={<ListOrdered className="w-4 h-4" />}
+        label={t('builder.format.title')}
+        isOpen={open === 'format'}
+        onToggle={() => toggle('format')}
+      >
+        <FormatConfigEditor />
       </SidebarSection>
     </aside>
   )

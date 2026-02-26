@@ -95,6 +95,15 @@
       "jumpTo": "이동",
       "ifScore": "현재 점수가",
       "threshold": "점수 임계값"
+    },
+    "format": {
+      "title": "형식 제어",
+      "sections": "섹션 인덱싱",
+      "questions": "질문 인덱싱",
+      "options": "옵션 인덱싱",
+      "none": "없음",
+      "numeric": "1 2 3",
+      "alpha": "A B C"
     }
   },
   "questionType": {
