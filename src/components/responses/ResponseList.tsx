@@ -15,9 +15,10 @@ interface Props {
   onFiltersChange: (f: ResponseFilters) => void
   onSelect: (r: Response) => void
   selectedId: string | undefined
+  showScore?: boolean
 }
 
-export default function ResponseList({ responses, survey, filters, onFiltersChange, onSelect, selectedId }: Props) {
+export default function ResponseList({ responses, survey, filters, onFiltersChange, onSelect, selectedId, showScore = true }: Props) {
   const { t } = useTranslation()
   const [showFilters, setShowFilters] = useState(false)
   const maxScore = survey ? getMaxPossibleScore(survey.questions) : 100
@@ -125,10 +126,12 @@ export default function ResponseList({ responses, survey, filters, onFiltersChan
                   <p className="font-medium text-sm text-gray-900">{name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{new Date(r.respondedAt).toLocaleString()}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-orange-500">{r.totalScore}</p>
-                  <p className="text-xs text-gray-400">{t('result.outOf')} {maxScore}</p>
-                </div>
+                {showScore && (
+                  <div className="text-right shrink-0">
+                    <p className="text-lg font-bold text-orange-500">{r.totalScore}</p>
+                    <p className="text-xs text-gray-400">{t('result.outOf')} {maxScore}</p>
+                  </div>
+                )}
               </button>
             )
           })}

@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import type { ResultConfig, Survey } from '@/types/survey'
 import type { Answer } from '@/types/response'
 import { resolveBranchTarget, calculateAnswerScore, matchAllScoreRanges } from '@/lib/scoring'
 import { indexLabel } from '@/lib/utils'
+import { readSession, writeSession } from '@/lib/sessionCache'
 import QuestionRenderer from './QuestionRenderer'
 
 interface Props {
   survey: Survey
-  onSubmit: (answers: Record<string, Answer>) => void
+  onSubmit: (answers: Record<string, Answer>, sectionScores: Record<string, number>) => void
   submitting: boolean
 }
 
@@ -25,14 +27,48 @@ interface PendingResult {
 
 export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
   const { t } = useTranslation()
-  const [sectionIndex, setSectionIndex]   = useState(0)
-  const [answers, setAnswers]             = useState<Record<string, Answer>>({})
+
+  const [sectionIndex, setSectionIndex] = useState(() => {
+    const s = readSession(survey.id)
+    const visLen = survey.sectionOrder.filter((id) => !survey.sections[id]?.hidden).length
+    return s ? Math.min(s.sectionIndex, Math.max(0, visLen - 1)) : 0
+  })
+  const [answers, setAnswers] = useState<Record<string, Answer>>(() => {
+    const s = readSession(survey.id)
+    if (!s?.answers) return {}
+    // Drop answers for questions removed from the survey since the session was saved
+    return Object.fromEntries(
+      Object.entries(s.answers).filter(([qId]) => qId in survey.questions)
+    )
+  })
   const [errors, setErrors]               = useState<Record<string, string>>({})
-  const [runningScore, setRunningScore]   = useState(0)
+  const [runningScore, setRunningScore]   = useState(
+    () => readSession(survey.id)?.runningScore ?? 0
+  )
+  const [sectionScores, setSectionScores] = useState<Record<string, number>>(
+    () => readSession(survey.id)?.sectionScores ?? {}
+  )
   const [pendingResult, setPendingResult] = useState<PendingResult | null>(null)
 
-  const section       = survey.sections[survey.sectionOrder[sectionIndex]]
-  const totalSections = survey.sectionOrder.length
+  // Persist player state to localStorage after every relevant change
+  useEffect(() => {
+    writeSession(survey.id, { sectionIndex, answers, runningScore, sectionScores })
+  }, [survey.id, sectionIndex, answers, runningScore, sectionScores])
+
+  // Notify the responder if we restored a non-trivial session
+  useEffect(() => {
+    const s = readSession(survey.id)
+    if (s && (s.sectionIndex > 0 || Object.keys(s.answers ?? {}).length > 0)) {
+      toast.info(t('responder.sessionRestored'), { description: t('responder.sessionRestoredHint') })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Exclude hidden sections — they are builder-side drafts and must not appear to respondents
+  const visibleSectionOrder = survey.sectionOrder.filter((id) => !survey.sections[id]?.hidden)
+
+  const section       = survey.sections[visibleSectionOrder[sectionIndex]]
+  const totalSections = visibleSectionOrder.length
   const progress      = ((sectionIndex + 1) / totalSections) * 100
 
   const handleAnswer = (questionId: string, value: Answer['value']) => {
@@ -53,7 +89,7 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
 
     for (const qId of section.questionOrder) {
       const q   = survey.questions[qId]
-      if (!q?.required) continue
+      if (!q || q.hidden || !q.required) continue
       const ans = answers[qId]
 
       if (!ans || ans.value === '' || ans.value === null || ans.value === undefined
@@ -93,27 +129,41 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
     const newScore = runningScore + sectionScore
     setRunningScore(newScore)
 
+    // Record score for this section (used when combineResultScreens is on)
+    const updatedSectionScores = { ...sectionScores, [section.id]: sectionScore }
+    setSectionScores(updatedSectionScores)
+
     const branchTarget = resolveBranchTarget(section.id, survey, answers, newScore)
+    // Map the branch target section ID into the visible-sections index.
+    // If the target is hidden (not in visibleSectionOrder), fall back to the next visible section.
     const nextIdx = branchTarget
-      ? survey.sectionOrder.indexOf(branchTarget)
+      ? (visibleSectionOrder.indexOf(branchTarget) !== -1
+          ? visibleSectionOrder.indexOf(branchTarget)
+          : sectionIndex + 1)
       : sectionIndex + 1
 
-    // If this section has a result config with ranges, pause and show result screen
+    // If this section has a result config with active items, it's not hidden, and we're not
+    // combining all screens into one final result, pause and show the per-section result screen
     const rc = section.resultConfig
-    if (rc && rc.ranges.length > 0) {
+    const rcActiveItems = rc
+      ? (survey.scoringDisabled ? (rc.messages ?? []) : rc.ranges)
+      : []
+    if (rc && rcActiveItems.length > 0 && !(rc.hideResults ?? false) && !(survey.combineResultScreens ?? false)) {
       setPendingResult({ config: rc, sectionScore, nextIdx })
+      window.scrollTo({ top: 0, behavior: 'instant' })
       return
     }
 
-    advanceTo(nextIdx, answers)
+    advanceTo(nextIdx, answers, updatedSectionScores)
   }
 
-  const advanceTo = (nextIdx: number, currentAnswers: Record<string, Answer>) => {
-    if (nextIdx >= totalSections || nextIdx === -1) {
-      onSubmit(currentAnswers)
+  const advanceTo = (nextIdx: number, currentAnswers: Record<string, Answer>, currentSectionScores: Record<string, number>) => {
+    if (nextIdx >= totalSections || nextIdx < 0) {
+      onSubmit(currentAnswers, currentSectionScores)
     } else {
       setErrors({})
       setSectionIndex(nextIdx)
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }
   }
 
@@ -122,13 +172,14 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
     if (!pendingResult) return
     const { nextIdx } = pendingResult
     setPendingResult(null)
-    advanceTo(nextIdx, answers)
+    advanceTo(nextIdx, answers, sectionScores)
   }
 
   const handleBack = () => {
     if (sectionIndex > 0) {
       setErrors({})
       setSectionIndex((i) => i - 1)
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }
   }
 
@@ -142,6 +193,7 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
         sectionScore={pendingResult.sectionScore}
         onContinue={handleResultContinue}
         isLastSection={pendingResult.nextIdx >= totalSections || pendingResult.nextIdx === -1}
+        scoringDisabled={survey.scoringDisabled ?? false}
       />
     )
   }
@@ -170,7 +222,9 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
               <h2 className="text-xl font-bold text-gray-900">
                 {(() => {
                   const fmt = survey.formatConfig?.sectionIndex ?? 'none'
-                  const prefix = indexLabel(sectionIndex, fmt)
+                  // Use the visible-section index for correct numbering
+                  const visIdx = visibleSectionOrder.indexOf(section.id)
+                  const prefix = indexLabel(visIdx, fmt)
                   return prefix ? <><span className="text-orange-500 mr-1.5">{prefix}</span>{section.title}</> : section.title
                 })()}
               </h2>
@@ -179,23 +233,42 @@ export default function SurveyPlayer({ survey, onSubmit, submitting }: Props) {
               <p className="text-sm text-gray-500 -mt-3 leading-relaxed">{section.description}</p>
             )}
 
-            {section.questionOrder.map((qId, qIdx) => {
-              const question = survey.questions[qId]
-              if (!question) return null
-              return (
-                <QuestionRenderer
-                  key={qId}
-                  id={`question-${qId}`}
-                  question={question}
-                  value={answers[qId]?.value}
-                  onChange={(val) => handleAnswer(qId, val)}
-                  error={errors[qId]}
-                  questionIndex={qIdx}
-                  questionIndexFormat={survey.formatConfig?.questionIndex ?? 'none'}
-                  optionIndexFormat={survey.formatConfig?.optionIndex ?? 'none'}
-                />
-              )
-            })}
+            {section.questionOrder.map(
+              // IIFE so we can maintain a counter for questions only;
+              // text blocks must not increment the question index.
+              // Hidden questions and text blocks are skipped entirely.
+              (() => {
+                let qCount = 0
+                return (qId: string) => {
+                  const question = survey.questions[qId]
+                  if (question) {
+                    if (question.hidden) return null   // skip hidden questions
+                    return (
+                      <QuestionRenderer
+                        key={qId}
+                        id={`question-${qId}`}
+                        question={question}
+                        value={answers[qId]?.value}
+                        onChange={(val) => handleAnswer(qId, val)}
+                        error={errors[qId]}
+                        questionIndex={qCount++}
+                        questionIndexFormat={survey.formatConfig?.questionIndex ?? 'none'}
+                        optionIndexFormat={survey.formatConfig?.optionIndex ?? 'none'}
+                      />
+                    )
+                  }
+                  const tb = survey.textBlocks?.[qId]
+                  if (tb?.content) {
+                    return (
+                      <p key={qId} className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {tb.content}
+                      </p>
+                    )
+                  }
+                  return null
+                }
+              })()
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -231,14 +304,19 @@ interface SectionResultProps {
   sectionScore: number
   onContinue: () => void
   isLastSection: boolean
+  scoringDisabled: boolean
 }
 
-function SectionResultScreen({ config, sectionScore, onContinue, isLastSection }: SectionResultProps) {
+function SectionResultScreen({ config, sectionScore, onContinue, isLastSection, scoringDisabled }: SectionResultProps) {
   const { t } = useTranslation()
-  const matchedRanges = matchAllScoreRanges(sectionScore, config.ranges)
+  // When scoring is disabled, use unconditional messages; otherwise filter ranges by score
+  const matchedRanges = scoringDisabled
+    ? (config.messages ?? [])
+    : matchAllScoreRanges(sectionScore, config.ranges)
+  const showScoreNumber = !scoringDisabled && config.showScore
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-white flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -251,7 +329,7 @@ function SectionResultScreen({ config, sectionScore, onContinue, isLastSection }
         </div>
 
         <div className="px-6 py-6 flex flex-col gap-5">
-          {config.showScore && (
+          {showScoreNumber && (
             <div className="text-center">
               <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('result.sectionScore')}</p>
               <p className="text-5xl font-black text-orange-500">{sectionScore}</p>
@@ -277,7 +355,7 @@ function SectionResultScreen({ config, sectionScore, onContinue, isLastSection }
               ))}
             </div>
           ) : (
-            config.ranges.length > 0 && (
+            (scoringDisabled ? (config.messages ?? []) : config.ranges).length > 0 && (
               <p className="text-gray-500 text-sm text-center leading-relaxed">{t('result.noRange')}</p>
             )
           )}

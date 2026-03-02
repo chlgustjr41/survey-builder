@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, AlertTriangle, RefreshCw, FileText, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Plus, AlertTriangle, RefreshCw, FileText, Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 import { useSurveyStore } from '@/stores/surveyStore'
-import { subscribeToAuthorSurveys, createSurvey } from '@/services/surveyService'
+import { subscribeToAuthorSurveys, createSurvey, importSurvey } from '@/services/surveyService'
+import { normalizeSurvey } from '@/lib/normalize'
+import { remapSurveyIds } from '@/lib/remapSurveyIds'
 import { getErrorMessage } from '@/lib/errorMessage'
 import AppShell from '@/components/shared/AppShell'
 import SurveyCard from '@/components/shared/SurveyCard'
@@ -26,11 +29,14 @@ const cardVariants = {
 }
 
 export default function SurveyListPage() {
+  const { t } = useTranslation()
   const { user } = useAuthStore()
   const { surveys, setSurveys, loading, setLoading } = useSurveyStore()
   const navigate = useNavigate()
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [creating, setCreating] = useState(false)
+  const [loadError, setLoadError]   = useState<string | null>(null)
+  const [creating, setCreating]     = useState(false)
+  const [importing, setImporting]   = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -65,9 +71,54 @@ export default function SurveyListPage() {
     // Don't reset `creating` on success — component unmounts on navigation
   }
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user || importing) return
+    // Reset so the same file can be re-selected after an error
+    e.target.value = ''
+
+    setImporting(true)
+    try {
+      const text = await file.text()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw: any = JSON.parse(text)
+
+      if (!raw || typeof raw !== 'object' || (!raw.title && !raw.sectionOrder && !raw.sections)) {
+        toast.error('Invalid survey file — does not look like a survey export.')
+        setImporting(false)
+        return
+      }
+
+      // Strip export-only metadata fields before normalizing
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { __schema_version, __exported_at, id, authorId, createdAt, updatedAt, ...rest } = raw
+
+      // Normalize to restore any missing defaults, then remap all internal IDs
+      // so the imported copy has no ID linkage to the original survey.
+      const normalized = remapSurveyIds(normalizeSurvey({
+        ...rest,
+        id: '',
+        authorId: user.uid,
+        status: 'draft',
+        publishedAt: null,
+        createdAt: 0,
+        updatedAt: 0,
+      }))
+
+      const created = await importSurvey(user.uid, normalized)
+      toast.success('Survey imported!')
+      navigate(`/app/surveys/${created.id}/edit`)
+    } catch (err) {
+      const { message, detail } = getErrorMessage(err, 'Failed to import survey — check the file format and try again.')
+      toast.error(message, { description: detail })
+      setImporting(false)
+    }
+    // Don't reset `importing` on success — component unmounts on navigation
+  }
+
   return (
     <AppShell>
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
 
         {/* Page header */}
         <motion.div
@@ -76,21 +127,21 @@ export default function SurveyListPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: 'easeOut' }}
         >
-          <h1 className="text-2xl font-semibold text-gray-800">My Surveys</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Create, manage, and share surveys</p>
+          <h1 className="text-2xl font-semibold text-gray-800">{t('nav.mySurveys')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('survey.listSubtitle')}</p>
         </motion.div>
 
         {/* Loading */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-400">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-400 border-t-transparent" />
-            <p className="text-sm">Loading your surveys…</p>
+            <p className="text-sm">{t('survey.loading')}</p>
           </div>
         ) : loadError ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <div className="flex items-center gap-2 text-red-500">
               <AlertTriangle className="w-5 h-5" />
-              <p className="font-medium">Could not load surveys</p>
+              <p className="font-medium">{t('survey.loadError')}</p>
             </div>
             <p className="text-sm text-gray-500 text-center max-w-sm">{loadError}</p>
             <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
@@ -108,12 +159,13 @@ export default function SurveyListPage() {
               transition={{ duration: 0.28, ease: 'easeOut', delay: 0.05 }}
             >
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-                Start a new survey
+                {t('survey.startNew')}
               </p>
               <div className="flex gap-4 flex-wrap">
+                {/* Blank survey */}
                 <motion.button
                   onClick={handleCreateSurvey}
-                  disabled={creating}
+                  disabled={creating || importing}
                   className="group flex flex-col gap-2 text-left disabled:opacity-60"
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
@@ -126,9 +178,34 @@ export default function SurveyListPage() {
                     }
                   </div>
                   <span className="text-xs font-medium text-gray-600">
-                    {creating ? 'Creating…' : 'Blank survey'}
+                    {creating ? t('survey.creating') : t('survey.blank')}
                   </span>
                 </motion.button>
+
+                {/* Import from file */}
+                <motion.label
+                  className={`group flex flex-col gap-2 text-left cursor-pointer ${importing || creating ? 'opacity-60 pointer-events-none' : ''}`}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="w-36 h-28 rounded-xl border-2 border-dashed border-gray-200 bg-white hover:border-orange-400 hover:bg-orange-50/60 transition-all flex items-center justify-center">
+                    {importing
+                      ? <Loader2 className="w-7 h-7 text-orange-400 animate-spin" />
+                      : <Upload className="w-8 h-8 text-gray-300 group-hover:text-orange-400 transition-colors" />
+                    }
+                  </div>
+                  <span className="text-xs font-medium text-gray-600">
+                    {importing ? t('survey.importing') : t('survey.importFromFile')}
+                  </span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    className="hidden"
+                    onChange={handleImport}
+                  />
+                </motion.label>
               </div>
             </motion.section>
 
@@ -142,7 +219,7 @@ export default function SurveyListPage() {
                   transition={{ duration: 0.2 }}
                 >
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-                    Recent surveys
+                    {t('survey.recent')}
                   </p>
                   <motion.div
                     className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
@@ -151,7 +228,7 @@ export default function SurveyListPage() {
                     animate="visible"
                   >
                     {surveys.map((survey) => (
-                      <motion.div key={survey.id} variants={cardVariants}>
+                      <motion.div key={survey.id} variants={cardVariants} className="h-full">
                         <SurveyCard survey={survey} />
                       </motion.div>
                     ))}
@@ -170,8 +247,8 @@ export default function SurveyListPage() {
                     <FileText className="w-8 h-8 text-gray-300" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-600 mb-1">No surveys yet</p>
-                    <p className="text-sm text-gray-400">Click "Blank survey" above to create your first one</p>
+                    <p className="font-medium text-gray-600 mb-1">{t('survey.noSurveysYet')}</p>
+                    <p className="text-sm text-gray-400">{t('survey.noSurveysHint')}</p>
                   </div>
                 </motion.div>
               )}

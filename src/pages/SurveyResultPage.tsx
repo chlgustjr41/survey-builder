@@ -11,7 +11,8 @@ export default function SurveyResultPage() {
   const navigate = useNavigate()
   const [survey, setSurvey] = useState<Survey | null>(null)
   const [loading, setLoading] = useState(true)
-  const totalScore = (location.state as { totalScore?: number })?.totalScore ?? 0
+  const { totalScore = 0, sectionScores = {} } =
+    (location.state as { totalScore?: number; sectionScores?: Record<string, number> }) ?? {}
 
   useEffect(() => {
     if (!id) { navigate('/'); return }
@@ -32,5 +33,5 @@ export default function SurveyResultPage() {
 
   if (!survey) return null
 
-  return <ResultScreen survey={survey} totalScore={totalScore} />
+  return <ResultScreen survey={survey} totalScore={totalScore} sectionScores={sectionScores} />
 }

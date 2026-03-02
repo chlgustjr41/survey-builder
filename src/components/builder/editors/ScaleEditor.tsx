@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useBuilderStore } from '@/stores/builderStore'
@@ -6,9 +7,11 @@ import type { Question } from '@/types/question'
 interface Props { question: Question }
 
 export default function ScaleEditor({ question }: Props) {
-  const { updateQuestion } = useBuilderStore()
+  const { t } = useTranslation()
+  const { draft, updateQuestion } = useBuilderStore()
   const cfg = question.scaleConfig ?? { min: 1, max: 5, useValueAsPoints: false }
-  const rangeError = cfg.max <= cfg.min ? 'Max must be greater than min' : null
+  const scoringDisabled = draft?.scoringDisabled ?? false
+  const rangeError = cfg.max <= cfg.min ? t('builder.scale.rangeError') : null
 
   // Derive a preview of scale buttons (cap at 10 for display)
   const steps = Array.from(
@@ -23,7 +26,7 @@ export default function ScaleEditor({ question }: Props) {
       {/* Range inputs */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500">Range</span>
+          <span className="text-xs text-gray-500">{t('builder.scale.range')}</span>
           <Input
             type="number"
             className={`w-14 h-7 text-xs ${rangeError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
@@ -53,7 +56,7 @@ export default function ScaleEditor({ question }: Props) {
       <div className="flex items-center gap-2">
         <Input
           className="h-7 text-xs"
-          placeholder="Min label (e.g. Poor)"
+          placeholder={t('builder.scale.minLabelPlaceholder')}
           value={cfg.minLabel ?? ''}
           onChange={(e) =>
             updateQuestion(question.id, { scaleConfig: { ...cfg, minLabel: e.target.value } })
@@ -61,7 +64,7 @@ export default function ScaleEditor({ question }: Props) {
         />
         <Input
           className="h-7 text-xs"
-          placeholder="Max label (e.g. Excellent)"
+          placeholder={t('builder.scale.maxLabelPlaceholder')}
           value={cfg.maxLabel ?? ''}
           onChange={(e) =>
             updateQuestion(question.id, { scaleConfig: { ...cfg, maxLabel: e.target.value } })
@@ -92,24 +95,26 @@ export default function ScaleEditor({ question }: Props) {
         )}
       </div>
 
-      {/* Points toggle */}
-      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-        <div>
-          <p className="text-xs font-medium text-gray-700">Use scale value as points</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            {cfg.useValueAsPoints
-              ? `Selecting ${cfg.max} awards ${cfg.max} pts; selecting ${cfg.min} awards ${cfg.min} pts.`
-              : 'Scale response will not contribute to the score.'}
-          </p>
+      {/* Points toggle — hidden when scoring is disabled */}
+      {!scoringDisabled && (
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div>
+            <p className="text-xs font-medium text-gray-700">{t('builder.scale.useValueAsPoints')}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {cfg.useValueAsPoints
+                ? t('builder.scale.useValueAsPointsOn', { max: cfg.max, min: cfg.min })
+                : t('builder.scale.useValueAsPointsOff')}
+            </p>
+          </div>
+          <Switch
+            checked={cfg.useValueAsPoints}
+            onCheckedChange={(v) =>
+              updateQuestion(question.id, { scaleConfig: { ...cfg, useValueAsPoints: v } })
+            }
+            className="scale-[0.85] origin-right"
+          />
         </div>
-        <Switch
-          checked={cfg.useValueAsPoints}
-          onCheckedChange={(v) =>
-            updateQuestion(question.id, { scaleConfig: { ...cfg, useValueAsPoints: v } })
-          }
-          className="scale-[0.85] origin-right"
-        />
-      </div>
+      )}
     </div>
   )
 }

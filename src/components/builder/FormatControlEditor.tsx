@@ -2,11 +2,15 @@ import { useTranslation } from 'react-i18next'
 import { useBuilderStore } from '@/stores/builderStore'
 import type { IndexFormat, FormatConfig } from '@/types/survey'
 
-const FORMAT_OPTIONS: { value: IndexFormat; label: string }[] = [
-  { value: 'none',        label: 'None'  },
-  { value: 'numeric',     label: '1 2 3' },
-  { value: 'alpha-lower', label: 'a b c' },
-  { value: 'alpha-upper', label: 'A B C' },
+function Divider() {
+  return <div className="border-t border-gray-100 -mx-4" />
+}
+
+const FORMAT_OPTIONS: { value: IndexFormat; labelKey: string }[] = [
+  { value: 'none',        labelKey: 'builder.format.none'       },
+  { value: 'numeric',     labelKey: 'builder.format.numeric'    },
+  { value: 'alpha-lower', labelKey: 'builder.format.alphaLower' },
+  { value: 'alpha-upper', labelKey: 'builder.format.alphaUpper' },
 ]
 
 interface RowProps {
@@ -16,8 +20,9 @@ interface RowProps {
 }
 
 function FormatRow({ label, value, onChange }: RowProps) {
+  const { t } = useTranslation()
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</span>
       <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
         {FORMAT_OPTIONS.map((opt) => (
@@ -31,7 +36,7 @@ function FormatRow({ label, value, onChange }: RowProps) {
                 : 'bg-white text-gray-500 hover:bg-gray-50'
             }`}
           >
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </div>
@@ -50,17 +55,23 @@ export default function FormatControlEditor() {
     updateMeta({ formatConfig: { ...cfg, [field]: value } })
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <FormatRow
         label={t('builder.format.sections')}
         value={cfg.sectionIndex}
         onChange={(v) => update('sectionIndex', v)}
       />
+
+      <Divider />
+
       <FormatRow
         label={t('builder.format.questions')}
         value={cfg.questionIndex}
         onChange={(v) => update('questionIndex', v)}
       />
+
+      <Divider />
+
       <FormatRow
         label={t('builder.format.options')}
         value={cfg.optionIndex}

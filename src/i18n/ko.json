@@ -29,14 +29,28 @@
     "qrCode": "QR 코드",
     "copyLink": "링크 복사",
     "linkCopied": "링크 복사됨!",
+    "downloadQR": "QR 다운로드",
+    "permanentLink": "이 링크는 영구적이며 변경되지 않습니다.",
     "noSurveys": "아직 설문이 없습니다. 첫 번째 설문을 만들어보세요!",
-    "createFirst": "설문 만들기"
+    "createFirst": "설문 만들기",
+    "blank": "빈 설문",
+    "importFromFile": "파일에서 가져오기",
+    "creating": "생성 중…",
+    "importing": "가져오는 중…",
+    "listSubtitle": "설문을 만들고, 관리하고, 공유하세요",
+    "startNew": "새 설문 시작",
+    "recent": "최근 설문",
+    "loading": "설문 불러오는 중…",
+    "loadError": "설문을 불러올 수 없습니다",
+    "noSurveysYet": "아직 설문이 없습니다",
+    "noSurveysHint": "위의 \"빈 설문\"을 클릭해 첫 번째 설문을 만드세요"
   },
   "builder": {
     "settings": "설문 설정",
     "sections": "섹션",
     "addSection": "섹션 추가",
     "addQuestion": "질문 추가",
+    "textBlock": "텍스트 블록",
     "sectionTitle": "섹션 제목",
     "questionPrompt": "질문",
     "required": "필수",
@@ -47,6 +61,19 @@
     "saving": "저장 중...",
     "saved": "저장됨",
     "unsavedChanges": "저장되지 않은 변경사항",
+    "untitled": "제목 없는 설문",
+    "export": "내보내기",
+    "duplicate": "복제",
+    "pts": "점",
+    "dragToReorder": "드래그하여 순서 변경",
+    "formSettings": "양식 설정",
+    "sidebar": {
+      "collapse": "설정 패널 접기",
+      "expand": "설정 패널 열기"
+    },
+    "noSections": "아직 섹션이 없습니다",
+    "noSectionsHint": "섹션을 추가하여 설문 작성을 시작하세요",
+    "addFirstSection": "첫 번째 섹션 추가",
     "schedule": {
       "title": "일정",
       "openAt": "시작 시간",
@@ -58,41 +85,115 @@
       "title": "응답자 식별",
       "addField": "필드 추가",
       "fieldLabel": "필드 레이블",
+      "hint": "설문 표시 전에 응답자 정보를 수집하세요.",
+      "customFields": "사용자 정의 필드",
+      "fieldLabelPlaceholder": "필드 레이블…",
       "preset": {
         "name": "이름",
         "dob": "생년월일",
+        "gender": "성별",
         "email": "이메일",
         "phone": "전화번호",
         "employeeId": "사번",
         "studentId": "학번",
         "custom": "커스텀 필드"
+      },
+      "genderOptions": {
+        "male": "남성",
+        "female": "여성",
+        "nonBinary": "논바이너리",
+        "preferNotToSay": "밝히지 않음",
+        "other": "기타",
+        "placeholder": "성별 선택…"
       }
     },
     "result": {
       "title": "결과 화면",
       "showScore": "점수 표시",
+      "hideResults": "응답자에게 숨기기",
       "addRange": "점수 범위 추가",
+      "addResultMessage": "결과 메시지 추가",
+      "scoreRanges": "점수 범위",
+      "resultMessages": "결과 메시지",
+      "alwaysShown": "항상 표시",
+      "orLabel": "또는",
       "rangeMin": "최소 점수",
       "rangeMax": "최대 점수",
       "message": "메시지",
-      "image": "결과 이미지 (선택)"
+      "image": "결과 이미지 (선택)",
+      "rangeMinPlaceholder": "최소",
+      "rangeMaxPlaceholder": "최대",
+      "rangeMaxError": "최댓값은 최솟값 이상이어야 합니다"
+    },
+    "resultSettings": {
+      "title": "결과 설정",
+      "scoring": "채점",
+      "disableScoring": "채점 비활성화",
+      "disableScoringHint": "모든 점수 필드를 숨깁니다. 점수가 계산되지 않습니다.",
+      "display": "화면 설정",
+      "combineResultScreens": "결과 화면 통합",
+      "combineResultScreensHint": "각 섹션 직후 대신 설문 마지막에 모든 섹션 결과를 함께 표시합니다.",
+      "sectionResultsCombinedNote": "이 섹션 결과들은 설문 마지막에 함께 표시됩니다.",
+      "generalResult": "일반 결과 화면",
+      "sectionResults": "섹션별 결과 화면",
+      "noSections": "아직 섹션이 없습니다.",
+      "noResultScreen": "응답자에게 결과 화면이 표시되지 않습니다."
     },
     "email": {
       "title": "이메일 자동화",
       "enable": "자동 이메일 발송 활성화",
       "subject": "이메일 제목",
       "body": "이메일 본문 (HTML)",
-      "image": "첨부 이미지 (선택)"
+      "image": "첨부 이미지 (선택)",
+      "imageTooLarge": "이미지가 너무 큽니다 ({{size}} MB). 최대 5 MB.",
+      "invalidImageType": "이미지 파일만 지원됩니다 (JPEG, PNG, GIF, WebP).",
+      "enableHint": "응답자에게 결과가 포함된 이메일을 자동 발송합니다.",
+      "emailFieldRequired": "이메일 자동화를 사용하려면 응답자 식별에서 이메일 필드를 활성화하세요.",
+      "subjectPlaceholder": "설문 결과",
+      "bodyPlaceholder": "<p>설문에 참여해 주셔서 감사합니다!</p>",
+      "htmlHint": "HTML을 지원합니다. {{score}}를 사용하여 응답자의 점수를 삽입하세요.",
+      "uploading": "업로드 중…",
+      "clickToUpload": "클릭하여 업로드",
+      "uploadHint": "JPG, PNG, GIF, WebP · 최대 5 MB"
     },
     "format": {
       "title": "형식",
       "sections": "섹션",
       "questions": "질문",
-      "options": "옵션"
+      "options": "옵션",
+      "none": "없음",
+      "numeric": "1 2 3",
+      "alphaLower": "a b c",
+      "alphaUpper": "A B C"
     },
     "branchRules": {
       "title": "분기 로직",
       "add": "규칙 추가",
+      "addNew": "새 규칙 추가",
+      "conditionType": "조건 유형",
+      "section": "섹션",
+      "untitledQuestion": "제목 없는 질문",
+      "untitledSection": "제목 없는 섹션",
+      "unnamedOption": "이름 없는 옵션",
+      "activeRules": "활성 규칙",
+      "noRules": "아직 규칙이 없습니다. 아래에서 규칙을 추가하여 답변이나 점수에 따라 응답자를 이동시키세요.",
+      "needsMoreSections": "분기를 설정하려면 캔버스에 섹션을 하나 이상 추가하세요.",
+      "needsChoiceQuestion": "이 섹션에 먼저 객관식 질문을 추가하세요.",
+      "removeRule": "규칙 삭제",
+      "selectTargetSection": "대상 섹션을 선택해 주세요.",
+      "hiddenTargetWarning": "1개의 규칙이 숨겨진 섹션 또는 질문을 참조하며 응답자에게는 건너뜁니다.",
+      "hiddenTargetsWarning": "{{count}}개의 규칙이 숨겨진 섹션 또는 질문을 참조하며 응답자에게는 건너뜁니다.",
+      "selectQuestionError": "질문을 선택해 주세요.",
+      "selectAnswerOption": "답변 옵션을 선택해 주세요.",
+      "whenAnswerTo": "다음 질문의 답변이…",
+      "selectQuestionPlaceholder": "질문 선택…",
+      "equals": "…인 경우",
+      "selectAnswerPlaceholder": "답변 선택…",
+      "whenScore": "현재 점수가…",
+      "atLeast": "≥ 이상",
+      "atMost": "≤ 이하",
+      "thenJumpTo": "다음으로 이동…",
+      "selectSectionPlaceholder": "섹션 선택…",
       "type": {
         "answer": "답변 기반",
         "score": "점수 기반"
@@ -102,6 +203,112 @@
       "jumpTo": "이동",
       "ifScore": "현재 점수가",
       "threshold": "점수 임계값"
+    },
+    "publish": {
+      "fixIssues": "게시 전 이 문제들을 수정하세요",
+      "goBackAndFix": "돌아가서 수정",
+      "noTitle": "설문 제목이 필요합니다 — 왼쪽 설정 패널에서 추가하세요.",
+      "noQuestions": "게시 전 캔버스에 표시되는 질문을 하나 이상 추가하세요.",
+      "scheduleError": "일정 오류: 시작 시간은 종료 시간보다 빨라야 합니다 (설정 → 일정 확인).",
+      "missingText1": "질문 1개에 텍스트가 없습니다 — 주황색 배지를 찾으세요.",
+      "missingTextMany": "질문 {{count}}개에 텍스트가 없습니다 — 각 카드의 주황색 배지를 확인하세요.",
+      "needsOptions": "\"{{label}}\"에 옵션이 {{count}}개뿐입니다. 최소 2개 이상 필요합니다.",
+      "missingText1Question": "\"{{n}}\"에 질문 텍스트가 없습니다 — 추가하거나 삭제하세요.",
+      "emptyOption1": "빈 레이블이 있는 옵션이 1개 있습니다 — 채우거나 삭제하세요.",
+      "emptyOptionMany": "빈 레이블이 있는 옵션이 {{count}}개 있습니다 — 채우거나 삭제하세요.",
+      "emptyOption1Question": "\"{{label}}\"에 빈 레이블 옵션이 1개 있습니다 — 채우거나 삭제하세요.",
+      "emptyOptionManyQuestion": "\"{{label}}\"에 빈 레이블 옵션이 {{count}}개 있습니다 — 채우거나 삭제하세요.",
+      "autoLocked": "편집 중 설문이 잠겼습니다 — 변경 사항을 게시하려면 잠금 해제를 클릭하세요.",
+      "clickToJump": "항목을 클릭하면 캔버스의 해당 위치로 이동합니다."
+    },
+    "question": {
+      "missingText": "질문 텍스트 없음",
+      "needsOptions": "옵션 2개 이상 필요",
+      "emptyOption": "빈 옵션 레이블",
+      "hide": "질문 숨기기 (초안 전용)",
+      "show": "질문 표시"
+    },
+    "section": {
+      "hide": "섹션 숨기기 (초안 전용)",
+      "show": "섹션 표시"
+    },
+    "text": {
+      "fieldSize": "입력 크기",
+      "short": "짧게",
+      "long": "길게",
+      "shortPreview": "짧은 답변…",
+      "longPreview": "긴 답변… (응답자가 크기 조절 가능)",
+      "noPoints": "텍스트 질문은 점수에 기여하지 않습니다."
+    },
+    "choice": {
+      "selection": "선택 방식",
+      "single": "단일",
+      "multi": "복수",
+      "minOptionsWarning": "응답자가 선택할 수 있도록 최소 2개의 옵션을 추가하세요.",
+      "optionLabelPlaceholder": "옵션 레이블 (필수)",
+      "selectBetween": "선택 범위",
+      "and": "~",
+      "options": "개",
+      "minError": "최솟값은 최댓값 이하여야 합니다",
+      "maxError": "최댓값은 최솟값 이상이어야 합니다",
+      "maxExceedsOptions": "최댓값은 옵션 수 {{count}}개를 초과할 수 없습니다"
+    },
+    "scale": {
+      "range": "범위",
+      "minLabelPlaceholder": "최소 레이블 (예: 나쁨)",
+      "maxLabelPlaceholder": "최대 레이블 (예: 매우 좋음)",
+      "useValueAsPoints": "척도 값을 점수로 사용",
+      "useValueAsPointsOn": "{{max}} 선택 시 {{max}}점, {{min}} 선택 시 {{min}}점이 부여됩니다.",
+      "useValueAsPointsOff": "척도 응답은 점수에 기여하지 않습니다.",
+      "rangeError": "최댓값은 최솟값보다 커야 합니다"
+    },
+    "textBlockCard": {
+      "placeholder": "텍스트, 안내사항 또는 설명을 입력하세요…",
+      "title": "텍스트 블록",
+      "delete": "텍스트 블록 삭제"
+    },
+    "general": {
+      "title": "일반",
+      "language": "기본 언어",
+      "languageHint": "응답자에게 표시되는 설문 언어를 설정합니다.",
+      "languageEn": "영어",
+      "languageKo": "한국어",
+      "allowDuplicates": "중복 제출 허용",
+      "allowDuplicatesHint": "비활성화 시, 동일한 식별 정보로 두 번 이상 제출할 수 없습니다."
+    },
+    "qr": {
+      "title": "QR 코드",
+      "logo": "로고",
+      "uploadLogo": "로고 이미지 업로드",
+      "uploading": "업로드 중…",
+      "logoUploaded": "로고 업로드됨",
+      "removeLogo": "로고 삭제",
+      "logoHint": "PNG, JPG, SVG 또는 WebP · 최대 2 MB · QR 코드 중앙에 표시됩니다.",
+      "logoTooBig": "이미지는 {{mb}} MB 이하여야 합니다.",
+      "logoSize": "로고 크기",
+      "cropTitle": "로고 자르기",
+      "cropHint": "드래그하여 위치 조정 · 슬라이더로 조정",
+      "cropZoom": "확대",
+      "logoShape": "로고 모양",
+      "cropApply": "적용",
+      "dotStyle": "QR 점",
+      "dotShape": "모양",
+      "dotColor": "점 색상",
+      "dotStyleSquare": "□ 사각형",
+      "dotStyleRounded": "▢ 둥근 모서리",
+      "dotStyleDot": "● 원형",
+      "resetDotStyle": "기본값으로 초기화",
+      "finderPatterns": "파인더 패턴 (눈)",
+      "finderColor": "색상",
+      "finderShape": "모양",
+      "resetFinder": "기본값으로 초기화",
+      "logoBorderColor": "로고 테두리",
+      "addLogoBorder": "테두리 추가",
+      "resetLogoBorder": "테두리 제거",
+      "border": "테두리",
+      "borderColor": "색상",
+      "borderRadius": "둥글기",
+      "resetBorder": "기본값으로 초기화"
     }
   },
   "questionType": {
@@ -126,7 +333,11 @@
     "selectMax": "최대 {{max}}개까지 선택 가능합니다.",
     "addTag": "태그를 입력하고 Enter를 누르세요",
     "thankYou": "감사합니다!",
-    "responseSubmitted": "응답이 제출되었습니다."
+    "responseSubmitted": "응답이 제출되었습니다.",
+    "sessionRestored": "진행 상황이 복원되었습니다",
+    "sessionRestoredHint": "이전에 멈춘 곳에서 계속합니다.",
+    "duplicateBlocked": "이미 이 설문을 완료하셨습니다.",
+    "duplicateBlockedHint": "1인 1응답만 허용됩니다."
   },
   "result": {
     "yourScore": "점수",
@@ -138,6 +349,9 @@
   "responses": {
     "title": "응답",
     "total": "총 {{count}}개의 응답",
+    "selectToView": "응답을 선택하여 세부 내용을 확인하세요",
+    "hideScore": "점수 숨기기",
+    "showScore": "점수 보기",
     "filters": {
       "title": "필터",
       "scoreRange": "점수 범위",
@@ -154,7 +368,10 @@
     "noFiltersMatch": "현재 필터에 맞는 응답이 없습니다.",
     "detail": {
       "responder": "응답자",
-      "answers": "답변"
+      "answers": "답변",
+      "pts": "점",
+      "noAnswers": "기록된 답변이 없습니다.",
+      "noAnswer": "(응답 없음)"
     }
   },
   "common": {

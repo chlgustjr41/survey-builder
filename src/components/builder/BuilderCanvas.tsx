@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   closestCenter,
@@ -19,8 +20,15 @@ import { useBuilderStore } from '@/stores/builderStore'
 import type { Section } from '@/types/survey'
 import SectionCard from './SectionCard'
 import BranchRuleEditor from './BranchRuleEditor'
+import { SidebarReopenTab } from './BuilderSidebar'
 
-export default function BuilderCanvas() {
+interface Props {
+  sidebarOpen: boolean
+  onOpenSidebar: () => void
+}
+
+export default function BuilderCanvas({ sidebarOpen, onOpenSidebar }: Props) {
+  const { t } = useTranslation()
   const { draft, addSection, updateMeta, reorderSections } = useBuilderStore()
 
   /**
@@ -45,7 +53,9 @@ export default function BuilderCanvas() {
 
   return (
     <>
-      <main className="flex-1 overflow-y-auto bg-gray-100 py-8 px-4">
+      <main className="relative flex-1 overflow-y-auto bg-gray-100 py-8 px-4">
+        {/* Sidebar reopen tab — floats at the left edge when sidebar is closed */}
+        {!sidebarOpen && <SidebarReopenTab onOpen={onOpenSidebar} />}
         <div className="max-w-2xl mx-auto flex flex-col gap-4">
 
           {/* ── Form header card ──────────────────────────────────────── */}
@@ -57,6 +67,7 @@ export default function BuilderCanvas() {
           >
             <div className="px-7 py-6">
               <input
+                id="builder-survey-title"
                 value={draft.title}
                 onChange={(e) => updateMeta({ title: e.target.value })}
                 placeholder="Untitled Survey"
@@ -80,18 +91,23 @@ export default function BuilderCanvas() {
           {/* ── Sections ──────────────────────────────────────────────── */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
             <SortableContext items={draft.sectionOrder} strategy={verticalListSortingStrategy}>
-              {draft.sectionOrder.map((sectionId, sectionIndex) => {
-                const section = draft.sections[sectionId]
-                if (!section) return null
-                return (
-                  <SectionCard
-                    key={sectionId}
-                    section={section}
-                    sectionIndex={sectionIndex}
-                    onBranchEdit={setBranchSection}
-                  />
-                )
-              })}
+              {(() => {
+                // Count only visible (non-hidden) sections for correct index labels
+                let visibleSectionCount = 0
+                return draft.sectionOrder.map((sectionId) => {
+                  const section = draft.sections[sectionId]
+                  if (!section) return null
+                  const idx = section.hidden ? -1 : visibleSectionCount++
+                  return (
+                    <SectionCard
+                      key={sectionId}
+                      section={section}
+                      sectionIndex={idx}
+                      onBranchEdit={setBranchSection}
+                    />
+                  )
+                })
+              })()}
             </SortableContext>
           </DndContext>
 
@@ -104,11 +120,11 @@ export default function BuilderCanvas() {
               transition={{ duration: 0.25, ease: 'easeOut', delay: 0.15 }}
             >
               <HelpCircle className="w-10 h-10 text-gray-200 mb-3" />
-              <p className="text-sm font-medium text-gray-400 mb-1">No sections yet</p>
-              <p className="text-xs text-gray-300 mb-5">Add a section to start building your survey</p>
+              <p className="text-sm font-medium text-gray-400 mb-1">{t('builder.noSections')}</p>
+              <p className="text-xs text-gray-300 mb-5">{t('builder.noSectionsHint')}</p>
               <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={addSection}>
                 <Plus className="w-4 h-4 mr-1.5" />
-                Add first section
+                {t('builder.addFirstSection')}
               </Button>
             </motion.div>
           )}
@@ -126,7 +142,7 @@ export default function BuilderCanvas() {
                 onClick={addSection}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add section
+                {t('builder.addSection')}
               </Button>
             </motion.div>
           )}

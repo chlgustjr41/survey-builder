@@ -29,14 +29,28 @@
     "qrCode": "QR Code",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
+    "downloadQR": "Download QR",
+    "permanentLink": "This link is permanent and won't change.",
     "noSurveys": "No surveys yet. Create your first one!",
-    "createFirst": "Create Survey"
+    "createFirst": "Create Survey",
+    "blank": "Blank survey",
+    "importFromFile": "Import from file",
+    "creating": "Creating…",
+    "importing": "Importing…",
+    "listSubtitle": "Create, manage, and share surveys",
+    "startNew": "Start a new survey",
+    "recent": "Recent surveys",
+    "loading": "Loading your surveys…",
+    "loadError": "Could not load surveys",
+    "noSurveysYet": "No surveys yet",
+    "noSurveysHint": "Click \"Blank survey\" above to create your first one"
   },
   "builder": {
     "settings": "Survey Settings",
     "sections": "Sections",
     "addSection": "Add Section",
     "addQuestion": "Add Question",
+    "textBlock": "Text Block",
     "sectionTitle": "Section Title",
     "questionPrompt": "Question",
     "required": "Required",
@@ -47,6 +61,19 @@
     "saving": "Saving...",
     "saved": "Saved",
     "unsavedChanges": "Unsaved changes",
+    "untitled": "Untitled Survey",
+    "export": "Export",
+    "duplicate": "Duplicate",
+    "pts": "pts",
+    "dragToReorder": "Drag to reorder",
+    "formSettings": "Form Settings",
+    "sidebar": {
+      "collapse": "Collapse settings panel",
+      "expand": "Open settings panel"
+    },
+    "noSections": "No sections yet",
+    "noSectionsHint": "Add a section to start building your survey",
+    "addFirstSection": "Add first section",
     "schedule": {
       "title": "Schedule",
       "openAt": "Open At",
@@ -58,41 +85,115 @@
       "title": "Responder Identification",
       "addField": "Add Field",
       "fieldLabel": "Field Label",
+      "hint": "Collect respondent info before showing the survey.",
+      "customFields": "Custom Fields",
+      "fieldLabelPlaceholder": "Field label…",
       "preset": {
         "name": "Full Name",
         "dob": "Date of Birth",
+        "gender": "Gender",
         "email": "Email",
         "phone": "Phone Number",
         "employeeId": "Employee ID",
         "studentId": "Student ID",
         "custom": "Custom Field"
+      },
+      "genderOptions": {
+        "male": "Male",
+        "female": "Female",
+        "nonBinary": "Non-binary",
+        "preferNotToSay": "Prefer not to say",
+        "other": "Other",
+        "placeholder": "Select gender…"
       }
     },
     "result": {
       "title": "Result Screen",
       "showScore": "Show Score",
+      "hideResults": "Hide from respondents",
       "addRange": "Add Score Range",
+      "addResultMessage": "Add Result Message",
+      "scoreRanges": "Score Ranges",
+      "resultMessages": "Result Messages",
+      "alwaysShown": "always shown",
+      "orLabel": "or",
       "rangeMin": "Min Score",
       "rangeMax": "Max Score",
       "message": "Message",
-      "image": "Result Image (optional)"
+      "image": "Result Image (optional)",
+      "rangeMinPlaceholder": "Min",
+      "rangeMaxPlaceholder": "Max",
+      "rangeMaxError": "Max must be ≥ min"
+    },
+    "resultSettings": {
+      "title": "Result Settings",
+      "scoring": "Scoring",
+      "disableScoring": "Disable scoring",
+      "disableScoringHint": "Hides all point fields. Score will not be calculated.",
+      "display": "Display",
+      "combineResultScreens": "Combine Result Screens",
+      "combineResultScreensHint": "Show all section results together at the end instead of after each section.",
+      "sectionResultsCombinedNote": "These section results will be shown together at the end of the survey.",
+      "generalResult": "General Result Screen",
+      "sectionResults": "Section Result Screens",
+      "noSections": "No sections yet.",
+      "noResultScreen": "No result screen will be shown to respondents."
     },
     "email": {
       "title": "Email Automation",
       "enable": "Enable automated email",
       "subject": "Email Subject",
       "body": "Email Body (HTML)",
-      "image": "Attachment Image (optional)"
+      "image": "Attachment Image (optional)",
+      "imageTooLarge": "Image too large ({{size}} MB). Max 5 MB.",
+      "invalidImageType": "Only image files are supported (JPEG, PNG, GIF, WebP).",
+      "enableHint": "Send respondents a personalised email with their results.",
+      "emailFieldRequired": "Enable the Email field in Responder Identification to use email automation.",
+      "subjectPlaceholder": "Your survey result",
+      "bodyPlaceholder": "<p>Thank you for completing the survey!</p>",
+      "htmlHint": "HTML is supported. Use {{score}} to insert the respondent's score.",
+      "uploading": "Uploading…",
+      "clickToUpload": "Click to upload",
+      "uploadHint": "JPG, PNG, GIF, WebP · max 5 MB"
     },
     "format": {
       "title": "Format",
       "sections": "Sections",
       "questions": "Questions",
-      "options": "Options"
+      "options": "Options",
+      "none": "None",
+      "numeric": "1 2 3",
+      "alphaLower": "a b c",
+      "alphaUpper": "A B C"
     },
     "branchRules": {
       "title": "Branch Logic",
       "add": "Add Rule",
+      "addNew": "Add new rule",
+      "conditionType": "Condition type",
+      "section": "Section",
+      "untitledQuestion": "Untitled question",
+      "untitledSection": "Untitled section",
+      "unnamedOption": "Unnamed option",
+      "activeRules": "Active rules",
+      "noRules": "No rules yet. Add one below to redirect respondents based on their answers or score.",
+      "needsMoreSections": "Add at least one more section to the canvas before configuring jumps.",
+      "needsChoiceQuestion": "Add a Multiple choice question to this section first.",
+      "removeRule": "Remove rule",
+      "selectTargetSection": "Please select a target section.",
+      "hiddenTargetWarning": "1 rule references a hidden section or question and will be skipped by respondents.",
+      "hiddenTargetsWarning": "{{count}} rules reference hidden sections or questions and will be skipped by respondents.",
+      "selectQuestionError": "Please select a question.",
+      "selectAnswerOption": "Please select an answer option.",
+      "whenAnswerTo": "When the answer to…",
+      "selectQuestionPlaceholder": "Select a question…",
+      "equals": "…equals",
+      "selectAnswerPlaceholder": "Select an answer…",
+      "whenScore": "When the score is…",
+      "atLeast": "≥ at least",
+      "atMost": "≤ at most",
+      "thenJumpTo": "Then jump to…",
+      "selectSectionPlaceholder": "Select a section…",
       "type": {
         "answer": "Based on Answer",
         "score": "Based on Score"
@@ -102,6 +203,112 @@
       "jumpTo": "jump to",
       "ifScore": "If running score",
       "threshold": "score threshold"
+    },
+    "publish": {
+      "fixIssues": "Fix these issues before publishing",
+      "goBackAndFix": "Go back and fix",
+      "noTitle": "Survey title is required — add it in the Settings panel on the left.",
+      "noQuestions": "Add at least one visible question to the canvas before publishing.",
+      "scheduleError": "Schedule error: open time must be before close time (check Settings → Schedule).",
+      "missingText1": "1 question is missing its prompt text — look for the amber badge.",
+      "missingTextMany": "{{count}} questions are missing prompt text — look for amber badges.",
+      "missingText1Question": "\"{{n}}\" is missing its prompt text — add it or delete the question.",
+      "needsOptions": "\"{{label}}\" needs ≥ 2 options (currently has {{count}}).",
+      "emptyOption1": "1 option has a blank label — fill it in or delete it.",
+      "emptyOptionMany": "{{count}} options have blank labels — fill them in or delete them.",
+      "emptyOption1Question": "\"{{label}}\" has 1 option with a blank label — fill it in or delete it.",
+      "emptyOptionManyQuestion": "\"{{label}}\" has {{count}} options with blank labels — fill them in or delete them.",
+      "autoLocked": "Survey locked while editing — click Unlock to publish your changes.",
+      "clickToJump": "Click an issue to jump to it in the canvas."
+    },
+    "question": {
+      "missingText": "Missing question text",
+      "needsOptions": "Needs ≥ 2 options",
+      "emptyOption": "Empty option label",
+      "hide": "Hide question (draft only)",
+      "show": "Show question"
+    },
+    "section": {
+      "hide": "Hide section (draft only)",
+      "show": "Show section"
+    },
+    "text": {
+      "fieldSize": "Field size",
+      "short": "Short",
+      "long": "Long",
+      "shortPreview": "Short answer…",
+      "longPreview": "Long answer… (responder can resize)",
+      "noPoints": "Text questions do not contribute to the score."
+    },
+    "choice": {
+      "selection": "Selection",
+      "single": "Single",
+      "multi": "Multi",
+      "minOptionsWarning": "Add at least 2 options for respondents to choose from.",
+      "optionLabelPlaceholder": "Option label (required)",
+      "selectBetween": "Select between",
+      "and": "and",
+      "options": "options",
+      "minError": "Min must be ≤ max",
+      "maxError": "Max must be ≥ min",
+      "maxExceedsOptions": "Max cannot exceed {{count}} options"
+    },
+    "scale": {
+      "range": "Range",
+      "minLabelPlaceholder": "Min label (e.g. Poor)",
+      "maxLabelPlaceholder": "Max label (e.g. Excellent)",
+      "useValueAsPoints": "Use scale value as points",
+      "useValueAsPointsOn": "Selecting {{max}} awards {{max}} pts; selecting {{min}} awards {{min}} pts.",
+      "useValueAsPointsOff": "Scale response will not contribute to the score.",
+      "rangeError": "Max must be greater than min"
+    },
+    "textBlockCard": {
+      "placeholder": "Enter text, instructions, or descriptions…",
+      "title": "Text Block",
+      "delete": "Delete text block"
+    },
+    "general": {
+      "title": "General",
+      "language": "Default Language",
+      "languageHint": "Sets the display language shown to respondents.",
+      "languageEn": "English",
+      "languageKo": "Korean",
+      "allowDuplicates": "Allow duplicate submissions",
+      "allowDuplicatesHint": "When off, the same identification cannot be used to submit more than once."
+    },
+    "qr": {
+      "title": "QR Code",
+      "logo": "Logo",
+      "uploadLogo": "Upload logo image",
+      "uploading": "Uploading…",
+      "logoUploaded": "Logo uploaded",
+      "removeLogo": "Remove logo",
+      "logoHint": "PNG, JPG, SVG or WebP · max 2 MB · displayed in the QR center.",
+      "logoTooBig": "Image must be under {{mb}} MB.",
+      "logoSize": "Logo size",
+      "cropTitle": "Crop Logo",
+      "cropHint": "Drag to reposition · use sliders to adjust",
+      "cropZoom": "Zoom",
+      "logoShape": "Logo shape",
+      "cropApply": "Apply",
+      "dotStyle": "QR Dots",
+      "dotShape": "Shape",
+      "dotColor": "Dot Color",
+      "dotStyleSquare": "□ Square",
+      "dotStyleRounded": "▢ Rounded",
+      "dotStyleDot": "● Dot",
+      "resetDotStyle": "Reset to default",
+      "finderPatterns": "Finder Patterns (Eyes)",
+      "finderColor": "Color",
+      "finderShape": "Shape",
+      "resetFinder": "Reset to default",
+      "logoBorderColor": "Logo Border",
+      "addLogoBorder": "Add border",
+      "resetLogoBorder": "Remove border",
+      "border": "Border",
+      "borderColor": "Color",
+      "borderRadius": "Roundness",
+      "resetBorder": "Reset to default"
     }
   },
   "questionType": {
@@ -126,7 +333,11 @@
     "selectMax": "Please select at most {{max}} option(s).",
     "addTag": "Add a tag and press Enter",
     "thankYou": "Thank you!",
-    "responseSubmitted": "Your response has been submitted."
+    "responseSubmitted": "Your response has been submitted.",
+    "sessionRestored": "Progress restored",
+    "sessionRestoredHint": "Resuming from where you left off.",
+    "duplicateBlocked": "You have already completed this survey.",
+    "duplicateBlockedHint": "Only one response per person is allowed."
   },
   "result": {
     "yourScore": "Your Score",
@@ -138,6 +349,9 @@
   "responses": {
     "title": "Responses",
     "total": "{{count}} response(s)",
+    "selectToView": "Select a response to view details",
+    "hideScore": "Hide scores",
+    "showScore": "Show scores",
     "filters": {
       "title": "Filters",
       "scoreRange": "Score Range",
@@ -154,7 +368,10 @@
     "noFiltersMatch": "No responses match the current filters.",
     "detail": {
       "responder": "Responder",
-      "answers": "Answers"
+      "answers": "Answers",
+      "pts": "pts",
+      "noAnswers": "No answers recorded.",
+      "noAnswer": "(no response)"
     }
   },
   "common": {

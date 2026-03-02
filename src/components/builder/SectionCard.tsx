@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable'
-import { GripVertical, Trash2, GitBranch, ChevronDown, BarChart2 } from 'lucide-react'
+import { GripVertical, Trash2, GitBranch, ChevronDown, BarChart2, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,7 @@ import type { ResultConfig, Section } from '@/types/survey'
 import { indexLabel } from '@/lib/utils'
 import type { QuestionType } from '@/types/question'
 import QuestionCard from './QuestionCard'
+import TextBlockCard from './TextBlockCard'
 import QuestionTypeMenu from './QuestionTypeMenu'
 import ResultConfigEditor from './ResultConfigEditor'
 
@@ -38,11 +39,11 @@ interface Props {
 
 export default function SectionCard({ section, sectionIndex, onBranchEdit }: Props) {
   const { t } = useTranslation()
-  const { draft, updateSection, deleteSection, addQuestion, reorderQuestions } = useBuilderStore()
+  const { draft, updateSection, deleteSection, addQuestion, addTextBlock, reorderQuestions, toggleSectionVisibility } = useBuilderStore()
   const fmt = draft?.formatConfig.sectionIndex ?? 'none'
   const sectionPrefix = indexLabel(sectionIndex, fmt)
-  const [collapsed, setCollapsed]         = useState(false)
-  const [resultOpen, setResultOpen]       = useState(false)
+  const [collapsed, setCollapsed]   = useState(false)
+  const [resultOpen, setResultOpen] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -53,7 +54,10 @@ export default function SectionCard({ section, sectionIndex, onBranchEdit }: Pro
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    // When dragging use the DnD opacity; hidden sections are also semi-transparent.
+    // Applying opacity here (outer wrapper) covers the card AND all its questions,
+    // giving a uniform greyed-out look when the whole section is hidden.
+    opacity: isDragging ? 0.4 : (section.hidden ? 0.5 : 1),
   }
 
   const handleQuestionDragEnd = (event: DragEndEvent) => {
@@ -68,11 +72,16 @@ export default function SectionCard({ section, sectionIndex, onBranchEdit }: Pro
 
   const resultConfig: ResultConfig = section.resultConfig ?? { showScore: false, ranges: [] }
   const hasResultConfig = resultConfig.ranges.length > 0
+  const isHidden = section.hidden ?? false
 
   return (
-    <div ref={setNodeRef} style={style} className="flex flex-col gap-0">
+    <div id={`builder-section-${section.id}`} ref={setNodeRef} style={style} className="flex flex-col gap-0">
       {/* ── Section header ────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden border-l-4 border-l-orange-400">
+      <div className={`rounded-xl border shadow-sm overflow-hidden border-l-4 ${
+        isHidden
+          ? 'bg-gray-50 border-gray-200 border-l-gray-300'
+          : 'bg-white border-gray-200 border-l-orange-400'
+      }`}>
         <div className="flex items-center gap-2 px-4 py-3">
           {/* Drag handle */}
           <button
@@ -136,6 +145,18 @@ export default function SectionCard({ section, sectionIndex, onBranchEdit }: Pro
             onClick={() => setResultOpen((o) => !o)}
           >
             <BarChart2 className="w-3.5 h-3.5" />
+          </Button>
+
+          {/* Visibility toggle */}
+          <Button
+            variant="ghost" size="icon"
+            className={`h-7 w-7 shrink-0 transition-colors ${
+              isHidden ? 'text-gray-400 bg-gray-100' : 'text-gray-300 hover:text-orange-500'
+            }`}
+            title={isHidden ? t('builder.section.show') : t('builder.section.hide')}
+            onClick={() => toggleSectionVisibility(section.id)}
+          >
+            {isHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           </Button>
 
           {/* Branch logic — opens dialog rendered at BuilderCanvas level */}
@@ -222,29 +243,54 @@ export default function SectionCard({ section, sectionIndex, onBranchEdit }: Pro
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleQuestionDragEnd}>
                 <SortableContext items={section.questionOrder} strategy={verticalListSortingStrategy}>
                   <AnimatePresence initial={false}>
-                    {section.questionOrder.map((qId, questionIndex) => {
-                      const question = draft?.questions[qId]
-                      if (!question) return null
-                      return (
-                        // ⚠ No `layout` prop — it applies will-change:transform which
-                        // creates a CSS containing block, breaking position:fixed dialogs.
-                        <motion.div
-                          key={qId}
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.18, ease: 'easeOut' }}
-                        >
-                          <QuestionCard question={question} sectionId={section.id} questionIndex={questionIndex} />
-                        </motion.div>
-                      )
-                    })}
+                    {(() => {
+                      // Count only visible (non-hidden) questions for correct index labels
+                      let visibleQuestionCount = 0
+                      return section.questionOrder.map((qId) => {
+                        const question = draft?.questions[qId]
+                        if (question) {
+                          // Assign index only to visible questions; hidden ones get -1
+                          const idx = question.hidden ? -1 : visibleQuestionCount++
+                          return (
+                            // ⚠ No `layout` prop — it applies will-change:transform which
+                            // creates a CSS containing block, breaking position:fixed dialogs.
+                            <motion.div
+                              key={qId}
+                              initial={{ opacity: 0, y: -8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              transition={{ duration: 0.18, ease: 'easeOut' }}
+                            >
+                              <QuestionCard question={question} sectionId={section.id} questionIndex={idx} />
+                            </motion.div>
+                          )
+                        }
+                        const textBlock = draft?.textBlocks?.[qId]
+                        if (textBlock) {
+                          return (
+                            <motion.div
+                              key={qId}
+                              initial={{ opacity: 0, y: -8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              transition={{ duration: 0.18, ease: 'easeOut' }}
+                            >
+                              <TextBlockCard id={qId} content={textBlock.content} sectionId={section.id} />
+                            </motion.div>
+                          )
+                        }
+                        return null
+                      })
+                    })()}
                   </AnimatePresence>
                 </SortableContext>
               </DndContext>
 
               <div className="pb-2">
-                <QuestionTypeMenu onSelect={handleAddQuestion} />
+                <QuestionTypeMenu
+                  onSelect={handleAddQuestion}
+                  onAddTextBlock={() => addTextBlock(section.id)}
+                />
               </div>
             </div>
           </motion.div>

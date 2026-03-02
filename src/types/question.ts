@@ -53,6 +53,7 @@ export interface Question {
   type: QuestionType
   prompt: string
   required: boolean
+  hidden?: boolean          // when true, question is a draft — skipped by the responder
   // NOTE: points live at the option level for 'choice' questions,
   //       and are derived from scale value for 'scale' questions.
   //       There is NO question-level pointValue field.

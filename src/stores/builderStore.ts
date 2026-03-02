@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { nanoid } from 'nanoid'
-import type { Survey, Section, BranchRule } from '@/types/survey'
+import type { Survey, Section, BranchRule, TextBlock } from '@/types/survey'
 import type { Question, QuestionType } from '@/types/question'
 import { normalizeSurvey } from '@/lib/normalize'
 
@@ -15,7 +15,7 @@ interface BuilderState {
   setIsDirty: (dirty: boolean) => void
 
   // Survey meta
-  updateMeta: (fields: Partial<Pick<Survey, 'title' | 'description' | 'schedule' | 'resultConfig' | 'emailConfig' | 'identificationFields' | 'formatConfig'>>) => void
+  updateMeta: (fields: Partial<Pick<Survey, 'title' | 'description' | 'schedule' | 'resultConfig' | 'emailConfig' | 'identificationFields' | 'formatConfig' | 'scoringDisabled' | 'combineResultScreens' | 'defaultLanguage' | 'allowDuplicates' | 'qrConfig'>>) => void
 
   // Sections
   addSection: () => void
@@ -32,9 +32,18 @@ interface BuilderState {
   deleteQuestion: (sectionId: string, questionId: string) => void
   reorderQuestions: (sectionId: string, newOrder: string[]) => void
   moveQuestion: (questionId: string, fromSection: string, toSection: string, newOrder: string[]) => void
+
+  // Text blocks
+  addTextBlock: (sectionId: string) => void
+  updateTextBlock: (id: string, content: string) => void
+  deleteTextBlock: (sectionId: string, id: string) => void
+
+  // Visibility
+  toggleSectionVisibility: (sectionId: string) => void
+  toggleQuestionVisibility: (questionId: string) => void
 }
 
-const DEFAULT_RESULT_CONFIG = { showScore: true, ranges: [] }
+const DEFAULT_RESULT_CONFIG = { showScore: true, ranges: [], messages: [] }
 const DEFAULT_EMAIL_CONFIG = { enabled: false, subject: '', bodyHtml: '' }
 const DEFAULT_SCHEDULE = { openAt: null, closeAt: null }
 const DEFAULT_FORMAT_CONFIG = { sectionIndex: 'none' as const, questionIndex: 'none' as const, optionIndex: 'none' as const }
@@ -89,8 +98,12 @@ export const useBuilderStore = create<BuilderState>((set) => ({
       if (!state.draft) return state
       const section = state.draft.sections[sectionId]
       if (!section) return state
-      const newQuestions = { ...state.draft.questions }
-      section.questionOrder.forEach((qId) => delete newQuestions[qId])
+      const newQuestions  = { ...state.draft.questions }
+      const newTextBlocks = { ...(state.draft.textBlocks ?? {}) }
+      section.questionOrder.forEach((id) => {
+        delete newQuestions[id]
+        delete newTextBlocks[id]
+      })
       const newSections = { ...state.draft.sections }
       delete newSections[sectionId]
       return {
@@ -98,6 +111,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
           ...state.draft,
           sections: newSections,
           questions: newQuestions,
+          textBlocks: newTextBlocks,
           sectionOrder: state.draft.sectionOrder.filter((id) => id !== sectionId),
         },
         isDirty: true,
@@ -284,6 +298,97 @@ export const useBuilderStore = create<BuilderState>((set) => ({
               questionOrder: from.questionOrder.filter((id) => id !== questionId),
             },
             [toSection]: { ...to, questionOrder: newOrder },
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  addTextBlock: (sectionId) =>
+    set((state) => {
+      if (!state.draft) return state
+      const section = state.draft.sections[sectionId]
+      if (!section) return state
+      const id = nanoid()
+      const block: TextBlock = { id, sectionId, content: '' }
+      return {
+        draft: {
+          ...state.draft,
+          textBlocks: { ...(state.draft.textBlocks ?? {}), [id]: block },
+          sections: {
+            ...state.draft.sections,
+            [sectionId]: { ...section, questionOrder: [...section.questionOrder, id] },
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  updateTextBlock: (id, content) =>
+    set((state) => {
+      if (!state.draft) return state
+      const block = state.draft.textBlocks?.[id]
+      if (!block) return state
+      return {
+        draft: {
+          ...state.draft,
+          textBlocks: { ...state.draft.textBlocks, [id]: { ...block, content } },
+        },
+        isDirty: true,
+      }
+    }),
+
+  deleteTextBlock: (sectionId, id) =>
+    set((state) => {
+      if (!state.draft) return state
+      const section = state.draft.sections[sectionId]
+      if (!section) return state
+      const newTextBlocks = { ...(state.draft.textBlocks ?? {}) }
+      delete newTextBlocks[id]
+      return {
+        draft: {
+          ...state.draft,
+          textBlocks: newTextBlocks,
+          sections: {
+            ...state.draft.sections,
+            [sectionId]: {
+              ...section,
+              questionOrder: section.questionOrder.filter((qId) => qId !== id),
+            },
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  toggleSectionVisibility: (sectionId) =>
+    set((state) => {
+      if (!state.draft) return state
+      const section = state.draft.sections[sectionId]
+      if (!section) return state
+      return {
+        draft: {
+          ...state.draft,
+          sections: {
+            ...state.draft.sections,
+            [sectionId]: { ...section, hidden: !section.hidden },
+          },
+        },
+        isDirty: true,
+      }
+    }),
+
+  toggleQuestionVisibility: (questionId) =>
+    set((state) => {
+      if (!state.draft) return state
+      const question = state.draft.questions[questionId]
+      if (!question) return state
+      return {
+        draft: {
+          ...state.draft,
+          questions: {
+            ...state.draft.questions,
+            [questionId]: { ...question, hidden: !question.hidden },
           },
         },
         isDirty: true,

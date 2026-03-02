@@ -1,10 +1,10 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useBuilderStore } from '@/stores/builderStore'
-import { getSurveyById, saveSurvey } from '@/services/surveyService'
+import { getSurveyById, saveSurvey, lockSurvey } from '@/services/surveyService'
 import { getErrorMessage } from '@/lib/errorMessage'
 import BuilderCanvas from '@/components/builder/BuilderCanvas'
 import BuilderSidebar from '@/components/builder/BuilderSidebar'
@@ -15,7 +15,8 @@ export default function SurveyBuilderPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { draft, initDraft, isDirty, setIsSaving, setIsDirty } = useBuilderStore()
+  const { draft, initDraft, clearDraft, isDirty, setIsSaving, setIsDirty } = useBuilderStore()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   /**
    * Tracks the survey ID that has been loaded into the builder store so we never
@@ -33,20 +34,32 @@ export default function SurveyBuilderPage() {
     // Already loaded this survey — skip re-fetch to preserve any unsaved edits
     if (loadedIdRef.current === id) return
 
+    // Clear the previous survey immediately so the loading spinner appears
+    // instead of showing stale content during the network fetch.
+    clearDraft()
+    loadedIdRef.current = null
+
     let cancelled = false
 
-    getSurveyById(id).then((survey) => {
+    getSurveyById(id).then(async (survey) => {
       if (cancelled) return
       if (survey) {
         loadedIdRef.current = id
-        initDraft(survey)
+        // Auto-lock published surveys while the builder is open so respondents
+        // cannot submit during an in-progress edit.
+        if (survey.status === 'published') {
+          try { await lockSurvey(survey.id, survey.authorId) } catch { /* non-blocking */ }
+          initDraft({ ...survey, status: 'locked' })
+        } else {
+          initDraft(survey)
+        }
       } else {
         navigate('/app', { replace: true })
       }
     })
 
     return () => { cancelled = true }
-  }, [id, user, initDraft, navigate])
+  }, [id, user, initDraft, clearDraft, navigate])
 
   // Core save — silent=true for auto-save (no toast noise every 2s)
   const handleSave = useCallback(async (silent = false) => {
@@ -83,8 +96,8 @@ export default function SurveyBuilderPage() {
     <div className="flex flex-col h-screen bg-gray-100">
       <BuilderHeader onSave={handleSave} />
       <div className="flex flex-1 overflow-hidden">
-        <BuilderSidebar />
-        <BuilderCanvas />
+        <BuilderSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen((v) => !v)} />
+        <BuilderCanvas sidebarOpen={sidebarOpen} onOpenSidebar={() => setSidebarOpen(true)} />
       </div>
     </div>
   )

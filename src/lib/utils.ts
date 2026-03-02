@@ -12,6 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function indexLabel(index: number, format: IndexFormat): string {
   if (format === 'none') return ''
+  if (index < 0) return ''  // hidden items get no index label
   if (format === 'numeric') return `${index + 1}.`
   const letter = String.fromCharCode(97 + (index % 26)) // a-z
   return format === 'alpha-upper' ? `${letter.toUpperCase()}.` : `${letter}.`

@@ -1,4 +1,4 @@
-import type { Survey } from '@/types/survey'
+import type { Survey, TextBlock, QrConfig } from '@/types/survey'
 import type { Question } from '@/types/question'
 
 // ── Legacy type names (still present in Firebase) ─────────────────────────────
@@ -207,8 +207,10 @@ export function normalizeSurvey(survey: Survey): Survey {
       questionOrder: section.questionOrder ?? [],
       branchRules:   section.branchRules   ?? [],
       resultConfig: {
-        showScore: section.resultConfig?.showScore ?? false,
-        ranges:    section.resultConfig?.ranges    ?? [],
+        showScore:   section.resultConfig?.showScore   ?? false,
+        hideResults: section.resultConfig?.hideResults ?? false,
+        ranges:      section.resultConfig?.ranges      ?? [],
+        messages:    section.resultConfig?.messages    ?? [],
       },
     }
   }
@@ -217,6 +219,18 @@ export function normalizeSurvey(survey: Survey): Survey {
   const normalizedQuestions: Record<string, Question> = {}
   for (const [id, question] of Object.entries(questions)) {
     normalizedQuestions[id] = migrateQuestion(question)
+  }
+
+  const rawTextBlocks = survey.textBlocks ?? {}
+  const normalizedTextBlocks: Record<string, TextBlock> = {}
+  for (const [id, block] of Object.entries(rawTextBlocks)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const b = block as any
+    normalizedTextBlocks[id] = {
+      id:        b.id        ?? id,
+      sectionId: b.sectionId ?? '',
+      content:   b.content   ?? '',
+    }
   }
 
   return {
@@ -232,9 +246,15 @@ export function normalizeSurvey(survey: Survey): Survey {
       openAt:  survey.schedule?.openAt  ?? null,
       closeAt: survey.schedule?.closeAt ?? null,
     },
+    scoringDisabled:      survey.scoringDisabled      ?? false,
+    combineResultScreens: survey.combineResultScreens ?? false,
+    defaultLanguage:      survey.defaultLanguage      ?? 'en',
+    allowDuplicates:      survey.allowDuplicates      ?? true,
     resultConfig: {
-      showScore: survey.resultConfig?.showScore ?? true,
-      ranges:    survey.resultConfig?.ranges    ?? [],
+      showScore:   survey.resultConfig?.showScore   ?? true,
+      hideResults: survey.resultConfig?.hideResults ?? false,
+      ranges:      survey.resultConfig?.ranges      ?? [],
+      messages:    survey.resultConfig?.messages    ?? [],
     },
     emailConfig: {
       enabled:  survey.emailConfig?.enabled  ?? false,
@@ -242,7 +262,21 @@ export function normalizeSurvey(survey: Survey): Survey {
       bodyHtml: survey.emailConfig?.bodyHtml ?? '',
       ...(survey.emailConfig?.imageUrl ? { imageUrl: survey.emailConfig.imageUrl } : {}),
     },
-    sections:  normalizedSections,
-    questions: normalizedQuestions,
+    ...(survey.qrConfig ? {
+      qrConfig: {
+        ...(survey.qrConfig.logoUrl         ? { logoUrl:         survey.qrConfig.logoUrl         } : {}),
+        ...(survey.qrConfig.logoDataUrl     ? { logoDataUrl:     survey.qrConfig.logoDataUrl     } : {}),
+        ...(survey.qrConfig.logoSize        ? { logoSize:        survey.qrConfig.logoSize        } : {}),
+        ...(survey.qrConfig.dotStyle        ? { dotStyle:        survey.qrConfig.dotStyle        } : {}),
+        ...(survey.qrConfig.dotColor        ? { dotColor:        survey.qrConfig.dotColor        } : {}),
+        ...(survey.qrConfig.finderColor     ? { finderColor:     survey.qrConfig.finderColor     } : {}),
+        ...(survey.qrConfig.finderShape     ? { finderShape:     survey.qrConfig.finderShape     } : {}),
+        ...(survey.qrConfig.borderColor     ? { borderColor:     survey.qrConfig.borderColor     } : {}),
+        ...(survey.qrConfig.borderRadius    ? { borderRadius:    survey.qrConfig.borderRadius    } : {}),
+      } satisfies QrConfig,
+    } : {}),
+    sections:   normalizedSections,
+    questions:  normalizedQuestions,
+    textBlocks: normalizedTextBlocks,
   }
 }

@@ -1,8 +1,36 @@
 import { ref, set, get, onValue, type Unsubscribe } from 'firebase/database'
 import { db } from './firebase'
-import type { Response, ResponseInput, ResponseFilters } from '@/types/response'
+import type { Answer, Response, ResponseInput, ResponseFilters } from '@/types/response'
 import { sanitizeForFirebase } from '@/lib/firebaseUtils'
 import { nanoid } from 'nanoid'
+
+/**
+ * Restores defaults that Firebase omits on write (null values, empty objects).
+ * Ensures every Response object is safe to render without null-checks at the call site.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeResponse(raw: any, id: string): Response {
+  const answers = raw.answers ?? {}
+  const normalizedAnswers: Record<string, Answer> = {}
+  for (const [qid, ans] of Object.entries(answers)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const a = ans as any
+    normalizedAnswers[qid] = {
+      questionId: a.questionId ?? qid,
+      value:      a.value      ?? '',
+      score:      typeof a.score === 'number' ? a.score : 0,
+    }
+  }
+  return {
+    id:             raw.id             ?? id,
+    surveyId:       raw.surveyId       ?? '',
+    respondedAt:    typeof raw.respondedAt === 'number' ? raw.respondedAt : Date.now(),
+    identification: raw.identification ?? {},
+    answers:        normalizedAnswers,
+    totalScore:     typeof raw.totalScore === 'number' ? raw.totalScore : 0,
+    emailSent:      raw.emailSent      ?? false,
+  }
+}
 
 function assertValidSubmission(input: ResponseInput): void {
   if (!input.surveyId || typeof input.surveyId !== 'string') {
@@ -31,7 +59,9 @@ export async function getResponses(
 ): Promise<Response[]> {
   const snap = await get(ref(db, `responses/${surveyId}`))
   if (!snap.exists()) return []
-  let responses = Object.values(snap.val() as Record<string, Response>)
+  let responses = Object.entries(snap.val() as Record<string, unknown>).map(([id, raw]) =>
+    normalizeResponse(raw, id)
+  )
 
   if (filters) {
     if (filters.scoreMin !== undefined) {
@@ -63,9 +93,27 @@ export function subscribeToResponses(
 ): Unsubscribe {
   return onValue(ref(db, `responses/${surveyId}`), (snap) => {
     if (!snap.exists()) { cb([]); return }
-    const responses = Object.values(snap.val() as Record<string, Response>)
+    const responses = Object.entries(snap.val() as Record<string, unknown>).map(([id, raw]) =>
+      normalizeResponse(raw, id)
+    )
     cb(responses.sort((a, b) => b.respondedAt - a.respondedAt))
   })
+}
+
+/**
+ * Returns true if any existing response for the survey has identification
+ * values that match ALL entries in the given identification map.
+ */
+export async function checkDuplicateIdentification(
+  surveyId: string,
+  identification: Record<string, string>,
+): Promise<boolean> {
+  const snap = await get(ref(db, `responses/${surveyId}`))
+  if (!snap.exists()) return false
+  const responses = Object.values(snap.val() as Record<string, Response>)
+  return responses.some((r) =>
+    Object.entries(identification).every(([k, v]) => r.identification?.[k] === v)
+  )
 }
 
 export async function getResponseById(

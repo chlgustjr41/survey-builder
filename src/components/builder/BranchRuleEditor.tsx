@@ -24,26 +24,37 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
 
   if (!draft) return null
 
-  // Only 'choice' questions support answer-based branching
+  // Only visible 'choice' questions support answer-based branching
   const branchableQuestions = section.questionOrder
     .map((id) => draft.questions[id])
-    .filter((q) => q && q.type === 'choice')
+    .filter((q) => q && q.type === 'choice' && !q.hidden)
 
   const selectedQuestion = branchableQuestions.find((q) => q.id === questionId)
 
-  // All other sections as valid jump targets
+  // All other visible sections as valid jump targets
   const otherSections = draft.sectionOrder
     .filter((id) => id !== section.id)
     .map((id) => draft.sections[id])
-    .filter(Boolean)
+    .filter((s) => s && !s.hidden)
 
   const noTargets = otherSections.length === 0
 
+  // Warn about existing rules that point to now-hidden items
+  const hiddenTargetRules = section.branchRules.filter((rule) => {
+    const target = draft.sections[rule.targetSectionId]
+    if (target?.hidden) return true
+    if (rule.type === 'answer') {
+      const q = draft.questions[rule.questionId ?? '']
+      if (q?.hidden) return true
+    }
+    return false
+  })
+
   // ── Add rule ────────────────────────────────────────────────────────────────
   const handleAdd = () => {
-    if (!targetSectionId)                         { setAddError('Please select a target section.'); return }
-    if (ruleType === 'answer' && !questionId)     { setAddError('Please select a question.'); return }
-    if (ruleType === 'answer' && !optionId)       { setAddError('Please select an answer option.'); return }
+    if (!targetSectionId)                         { setAddError(t('builder.branchRules.selectTargetSection')); return }
+    if (ruleType === 'answer' && !questionId)     { setAddError(t('builder.branchRules.selectQuestionError')); return }
+    if (ruleType === 'answer' && !optionId)       { setAddError(t('builder.branchRules.selectAnswerOption')); return }
 
     if (ruleType === 'answer') {
       addBranchRule(section.id, { type: 'answer', questionId, optionId, targetSectionId })
@@ -61,14 +72,14 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
     if (rule.type === 'answer') {
       const q      = draft.questions[rule.questionId ?? '']
       const opt    = q?.options?.find((o) => o.id === rule.optionId)
-      const qLabel = q?.prompt?.trim()    || 'Untitled question'
-      const oLabel = opt?.label?.trim()   || '?'
-      const target = draft.sections[rule.targetSectionId]?.title?.trim() || 'Untitled section'
+      const qLabel = q?.prompt?.trim()    || t('builder.branchRules.untitledQuestion')
+      const oLabel = opt?.label?.trim()   || t('builder.branchRules.unnamedOption')
+      const target = draft.sections[rule.targetSectionId]?.title?.trim() || t('builder.branchRules.untitledSection')
       return { cond: `"${qLabel}" = "${oLabel}"`, target }
     } else {
       const op     = rule.operator === 'gte' ? '≥' : '≤'
-      const target = draft.sections[rule.targetSectionId]?.title?.trim() || 'Untitled section'
-      return { cond: `Score ${op} ${rule.threshold} pts`, target }
+      const target = draft.sections[rule.targetSectionId]?.title?.trim() || t('builder.branchRules.untitledSection')
+      return { cond: `${t('builder.branchRules.ifScore')} ${op} ${rule.threshold} ${t('builder.pts')}`, target }
     }
   }
 
@@ -123,32 +134,51 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                 className="flex items-center gap-2 text-base font-semibold text-gray-900"
               >
                 <GitBranch className="w-4 h-4 text-orange-500 shrink-0" />
-                Branch Logic
+                {t('builder.branchRules.title')}
               </h2>
               <p className="text-xs text-gray-500 mt-1">
-                Section:{' '}
+                {t('builder.branchRules.section')}:{' '}
                 <span className="font-semibold text-gray-700">
-                  {section.title || 'Untitled section'}
+                  {section.title || t('builder.branchRules.untitledSection')}
                 </span>
               </p>
             </div>
 
+            {/* ── Hidden-target warning ────────────────────────────────── */}
+            {hiddenTargetRules.length > 0 && (
+              <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500" />
+                <span>
+                  {hiddenTargetRules.length === 1
+                    ? t('builder.branchRules.hiddenTargetWarning')
+                    : t('builder.branchRules.hiddenTargetsWarning', { count: hiddenTargetRules.length })}
+                </span>
+              </div>
+            )}
+
             {/* ── Active rules ─────────────────────────────────────────── */}
             <div>
-              <SectionLabel>Active rules</SectionLabel>
+              <SectionLabel>{t('builder.branchRules.activeRules')}</SectionLabel>
               {section.branchRules.length === 0 ? (
                 <div className="flex items-start gap-2 text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">
                   <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  No rules yet. Add one below to redirect respondents based on their answers or score.
+                  {t('builder.branchRules.noRules')}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   {section.branchRules.map((rule) => {
                     const { cond, target } = ruleLabel(rule)
+                    const targetHidden = draft.sections[rule.targetSectionId]?.hidden
+                    const questionHidden = rule.type === 'answer' && draft.questions[rule.questionId ?? '']?.hidden
+                    const ruleHasHidden = targetHidden || questionHidden
                     return (
                       <div
                         key={rule.id}
-                        className="flex items-start gap-2.5 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5"
+                        className={`flex items-start gap-2.5 rounded-lg px-3 py-2.5 border ${
+                          ruleHasHidden
+                            ? 'bg-amber-50 border-amber-200'
+                            : 'bg-orange-50 border-orange-100'
+                        }`}
                       >
                         <GitBranch className="w-3.5 h-3.5 text-orange-400 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
@@ -161,7 +191,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                         <button
                           onClick={() => removeBranchRule(section.id, rule.id)}
                           className="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
-                          title="Remove rule"
+                          title={t('builder.branchRules.removeRule')}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -176,7 +206,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
             {noTargets ? (
               <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
                 <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500" />
-                Add at least one more section to the canvas before configuring jumps.
+                {t('builder.branchRules.needsMoreSections')}
               </div>
             ) : (
               /* ── Add rule form ────────────────────────────────────── */
@@ -185,7 +215,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                 {/* Form header bar */}
                 <div className="bg-gray-50 border-b border-gray-100 px-4 py-2.5">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                    Add new rule
+                    {t('builder.branchRules.addNew')}
                   </p>
                 </div>
 
@@ -193,7 +223,7 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
 
                   {/* Condition type segmented control */}
                   <div>
-                    <FieldLabel>Condition type</FieldLabel>
+                    <FieldLabel>{t('builder.branchRules.conditionType')}</FieldLabel>
                     <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
                       <button
                         onClick={() => setRuleType('answer')}
@@ -223,20 +253,20 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                     branchableQuestions.length === 0 ? (
                       <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
                         <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500" />
-                        Add a Multiple choice or Checkboxes question to this section first.
+                        {t('builder.branchRules.needsChoiceQuestion')}
                       </div>
                     ) : (
                       <div className="flex flex-col gap-3">
                         <div>
-                          <FieldLabel>When the answer to…</FieldLabel>
+                          <FieldLabel>{t('builder.branchRules.whenAnswerTo')}</FieldLabel>
                           <StyledSelect
                             value={questionId}
                             onChange={(e) => { setQuestionId(e.target.value); setOptionId(''); setAddError('') }}
                           >
-                            <option value="">Select a question…</option>
+                            <option value="">{t('builder.branchRules.selectQuestionPlaceholder')}</option>
                             {branchableQuestions.map((q) => (
                               <option key={q.id} value={q.id}>
-                                {q.prompt?.trim() || 'Untitled question'}
+                                {q.prompt?.trim() || t('builder.branchRules.untitledQuestion')}
                               </option>
                             ))}
                           </StyledSelect>
@@ -244,15 +274,15 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
 
                         {selectedQuestion && (
                           <div>
-                            <FieldLabel>…equals</FieldLabel>
+                            <FieldLabel>{t('builder.branchRules.equals')}</FieldLabel>
                             <StyledSelect
                               value={optionId}
                               onChange={(e) => setOptionId(e.target.value)}
                             >
-                              <option value="">Select an answer…</option>
+                              <option value="">{t('builder.branchRules.selectAnswerPlaceholder')}</option>
                               {(selectedQuestion.options ?? []).map((o) => (
                                 <option key={o.id} value={o.id}>
-                                  {o.label?.trim() || 'Unnamed option'}
+                                  {o.label?.trim() || t('builder.branchRules.unnamedOption')}
                                 </option>
                               ))}
                             </StyledSelect>
@@ -262,15 +292,15 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                     )
                   ) : (
                     <div>
-                      <FieldLabel>When the score is…</FieldLabel>
+                      <FieldLabel>{t('builder.branchRules.whenScore')}</FieldLabel>
                       <div className="flex items-center gap-2">
                         <StyledSelect
                           value={operator}
                           onChange={(e) => setOperator(e.target.value as ScoreOperator)}
                           className="w-36"
                         >
-                          <option value="gte">≥ at least</option>
-                          <option value="lte">≤ at most</option>
+                          <option value="gte">{t('builder.branchRules.atLeast')}</option>
+                          <option value="lte">{t('builder.branchRules.atMost')}</option>
                         </StyledSelect>
                         <input
                           type="number"
@@ -278,14 +308,14 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                           onChange={(e) => setThreshold(Number(e.target.value))}
                           className="w-20 text-xs rounded-lg border border-gray-200 px-2.5 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-colors"
                         />
-                        <span className="text-xs text-gray-400 shrink-0">pts</span>
+                        <span className="text-xs text-gray-400 shrink-0">{t('builder.pts')}</span>
                       </div>
                     </div>
                   )}
 
                   {/* Target section */}
                   <div>
-                    <FieldLabel>Then jump to…</FieldLabel>
+                    <FieldLabel>{t('builder.branchRules.thenJumpTo')}</FieldLabel>
                     <div className="flex items-center gap-2">
                       <ArrowRight className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                       <StyledSelect
@@ -293,10 +323,10 @@ export default function BranchRuleEditor({ section, onClose }: Props) {
                         onChange={(e) => { setTargetSectionId(e.target.value); setAddError('') }}
                         className="flex-1"
                       >
-                        <option value="">Select a section…</option>
+                        <option value="">{t('builder.branchRules.selectSectionPlaceholder')}</option>
                         {otherSections.map((s) => (
                           <option key={s.id} value={s.id}>
-                            {s.title?.trim() || 'Untitled section'}
+                            {s.title?.trim() || t('builder.branchRules.untitledSection')}
                           </option>
                         ))}
                       </StyledSelect>

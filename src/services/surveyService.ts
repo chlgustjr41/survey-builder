@@ -57,6 +57,7 @@ export async function createSurvey(authorId: string): Promise<Survey> {
     publishedAt: null,
     sectionOrder: [],
     identificationFields: [],
+    formatConfig: { sectionIndex: 'none', questionIndex: 'none', optionIndex: 'none' },
     resultConfig: { showScore: true, ranges: [] },
     emailConfig: { enabled: false, subject: '', bodyHtml: '' },
     sections: {},
@@ -194,4 +195,29 @@ export async function deleteSurvey(id: string, authorId: string): Promise<void> 
     remove(ref(db, indexPath(id))),
     remove(ref(db, `responses/${id}`)),
   ])
+}
+
+/**
+ * Create a new survey from imported data (export file).
+ * A fresh ID is assigned and all runtime-only fields are reset so the
+ * imported survey starts as a clean draft owned by the current user.
+ */
+export async function importSurvey(
+  authorId: string,
+  data: Omit<Survey, 'id' | 'authorId' | 'createdAt' | 'updatedAt'>,
+): Promise<Survey> {
+  const id  = nanoid()
+  const now = Date.now()
+  const survey: Survey = {
+    ...data,
+    id,
+    authorId,
+    status:      'draft',
+    publishedAt: null,
+    createdAt:   now,
+    updatedAt:   now,
+  }
+  await set(ref(db, surveyPath(authorId, id)), sanitizeForFirebase(survey))
+  await set(ref(db, indexPath(id)), { authorId })
+  return survey
 }

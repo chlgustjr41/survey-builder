@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { nanoid } from 'nanoid'
 import { Trash2, AlertTriangle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useBuilderStore } from '@/stores/builderStore'
@@ -18,6 +19,7 @@ export default function ChoiceEditor({ question }: Props) {
   const { t } = useTranslation()
   const { draft, updateQuestion } = useBuilderStore()
   const fmt = draft?.formatConfig.optionIndex ?? 'none'
+  const scoringDisabled = draft?.scoringDisabled ?? false
 
   const options  = question.options ?? []
   const cfg      = question.choiceConfig ?? { selectionMode: 'single' }
@@ -27,14 +29,14 @@ export default function ChoiceEditor({ question }: Props) {
 
   // Validation
   const minError = isRange && min < 0
-    ? 'Min must be ≥ 0'
+    ? t('builder.choice.minError')
     : isRange && min > max
-    ? 'Min must be ≤ max'
+    ? t('builder.choice.minError')
     : null
   const maxError = isRange && max < min
-    ? 'Max must be ≥ min'
+    ? t('builder.choice.maxError')
     : isRange && options.length > 0 && max > options.length
-    ? `Max cannot exceed ${options.length} options`
+    ? t('builder.choice.maxExceedsOptions', { count: options.length })
     : null
 
   // ── Option helpers ─────────────────────────────────────────────────────────
@@ -66,7 +68,7 @@ export default function ChoiceEditor({ question }: Props) {
 
       {/* Selection mode segmented control */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500 shrink-0">Selection</span>
+        <span className="text-xs text-gray-500 shrink-0">{t('builder.choice.selection')}</span>
         <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
           <button
             type="button"
@@ -77,7 +79,7 @@ export default function ChoiceEditor({ question }: Props) {
                 : 'bg-white text-gray-500 hover:bg-gray-50'
             }`}
           >
-            Single
+            {t('builder.choice.single')}
           </button>
           <button
             type="button"
@@ -88,87 +90,127 @@ export default function ChoiceEditor({ question }: Props) {
                 : 'bg-white text-gray-500 hover:bg-gray-50'
             }`}
           >
-            Multi
+            {t('builder.choice.multi')}
           </button>
         </div>
       </div>
 
       {/* Minimum options warning */}
-      {options.length < 2 && (
-        <div className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2.5 py-2">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-          Add at least 2 options for respondents to choose from.
-        </div>
-      )}
+      <AnimatePresence>
+        {options.length < 2 && (
+          <motion.div
+            key="min-warning"
+            initial={{ opacity: 0, y: -4, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -4, height: 0 }}
+            transition={{ duration: 0.18 }}
+            style={{ overflow: 'hidden' }}
+            className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2.5 py-2"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            {t('builder.choice.minOptionsWarning')}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Options list */}
-      {options.map((opt, optIndex) => (
-        <div key={opt.id} className="flex items-center gap-2">
-          {/* Visual indicator: circle = single, square = range */}
-          {isRange
-            ? <div className="w-3 h-3 rounded border-2 border-gray-300 shrink-0" />
-            : <div className="w-3 h-3 rounded-full border-2 border-gray-300 shrink-0" />
-          }
+      <AnimatePresence initial={false}>
+        {options.map((opt, optIndex) => (
+          <motion.div
+            key={opt.id}
+            initial={{ opacity: 0, x: -8, height: 0 }}
+            animate={{ opacity: 1, x: 0, height: 'auto' }}
+            exit={{ opacity: 0, x: 8, height: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <motion.div
+              className="flex items-center gap-2 pb-0.5"
+              whileHover={{ x: 1 }}
+              transition={{ duration: 0.1 }}
+            >
+              {/* Visual indicator: circle = single, square = range */}
+              {isRange
+                ? <div className="w-3 h-3 rounded border-2 border-gray-300 shrink-0" />
+                : <div className="w-3 h-3 rounded-full border-2 border-gray-300 shrink-0" />
+              }
 
-          {/* Option index prefix */}
-          {fmt !== 'none' && (
-            <span className="text-xs font-semibold text-orange-500 shrink-0 w-5 text-right">
-              {indexLabel(optIndex, fmt)}
-            </span>
-          )}
+              {/* Option index prefix */}
+              {fmt !== 'none' && (
+                <span className="text-xs font-semibold text-orange-500 shrink-0 w-5 text-right">
+                  {indexLabel(optIndex, fmt)}
+                </span>
+              )}
 
-          {/* Label */}
-          <textarea
-            ref={autoResizeRef}
-            className={`flex-1 text-xs rounded-md border px-2 py-1 resize-none overflow-hidden outline-none leading-snug
-              transition-colors bg-white focus:border-orange-400
-              ${!opt.label.trim() ? 'border-amber-300 placeholder:text-amber-400' : 'border-gray-200 hover:border-gray-300'}`}
-            placeholder="Option label (required)"
-            rows={1}
-            value={opt.label}
-            onChange={(e) => {
-              const el = e.target
-              el.style.height = 'auto'
-              el.style.height = el.scrollHeight + 'px'
-              updateOption(opt.id, { label: el.value })
-            }}
-          />
+              {/* Label */}
+              <textarea
+                ref={autoResizeRef}
+                className={`flex-1 text-xs rounded-md border px-2 py-1 resize-none overflow-hidden outline-none leading-snug
+                  transition-colors bg-white focus:border-orange-400
+                  ${!opt.label.trim() ? 'border-amber-300 placeholder:text-amber-400' : 'border-gray-200 hover:border-gray-300'}`}
+                placeholder={t('builder.choice.optionLabelPlaceholder')}
+                rows={1}
+                value={opt.label}
+                onChange={(e) => {
+                  const el = e.target
+                  el.style.height = 'auto'
+                  el.style.height = el.scrollHeight + 'px'
+                  updateOption(opt.id, { label: el.value })
+                }}
+              />
 
-          {/* Points per option */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Input
-              type="number"
-              min={0}
-              className="w-16 h-7 text-xs text-center"
-              placeholder="pts"
-              value={opt.points}
-              onChange={(e) => updateOption(opt.id, { points: Number(e.target.value) })}
-            />
-            <span className="text-[10px] text-gray-400">pts</span>
-          </div>
+              {/* Points per option — hidden when scoring is disabled */}
+              {!scoringDisabled && (
+                <div className="flex items-center gap-1 shrink-0">
+                  <Input
+                    type="number"
+                    min={0}
+                    className="w-16 h-7 text-xs text-center"
+                    placeholder={t('builder.pts')}
+                    value={opt.points}
+                    onChange={(e) => updateOption(opt.id, { points: Number(e.target.value) })}
+                  />
+                  <span className="text-[10px] text-gray-400">{t('builder.pts')}</span>
+                </div>
+              )}
 
-          {/* Remove */}
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => removeOption(opt.id)}>
-            <Trash2 className="w-3 h-3 text-red-400" />
-          </Button>
-        </div>
-      ))}
+              {/* Remove — scale on hover */}
+              <motion.div
+                whileHover={{ scale: 1.18 }}
+                whileTap={{ scale: 0.85 }}
+                transition={{ duration: 0.1 }}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  onClick={() => removeOption(opt.id)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {/* Add option */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-xs text-gray-400 justify-start px-1"
-        onClick={addOption}
-      >
-        + {t('builder.addOption')}
-      </Button>
+      <motion.div whileHover={{ x: 2 }} transition={{ duration: 0.1 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs text-gray-400 justify-start px-1 hover:text-orange-500 transition-colors"
+          onClick={addOption}
+        >
+          + {t('builder.addOption')}
+        </Button>
+      </motion.div>
 
       {/* Range min / max selection limits */}
       {isRange && (
         <div className="flex flex-col gap-1 pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500">Select between</span>
+            <span className="text-xs text-gray-500">{t('builder.choice.selectBetween')}</span>
             <div className="flex flex-col">
               <Input
                 type="number"
@@ -180,7 +222,7 @@ export default function ChoiceEditor({ question }: Props) {
                 }
               />
             </div>
-            <span className="text-xs text-gray-400">and</span>
+            <span className="text-xs text-gray-400">{t('builder.choice.and')}</span>
             <div className="flex flex-col">
               <Input
                 type="number"
@@ -192,7 +234,7 @@ export default function ChoiceEditor({ question }: Props) {
                 }
               />
             </div>
-            <span className="text-xs text-gray-400">options</span>
+            <span className="text-xs text-gray-400">{t('builder.choice.options')}</span>
           </div>
           {(minError || maxError) && (
             <p className="text-xs text-red-500 flex items-center gap-1">

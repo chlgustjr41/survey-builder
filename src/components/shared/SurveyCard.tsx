@@ -6,8 +6,8 @@ import { Edit2, Trash2, BarChart2, QrCode, Lock, Unlock, Send, ClipboardList } f
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { QRCodeCanvas } from 'qrcode.react'
 import type { Survey } from '@/types/survey'
+import QrCodeDisplay from '@/components/shared/QrCodeDisplay'
 import { deleteSurvey, publishSurvey, lockSurvey, unlockSurvey } from '@/services/surveyService'
 import { getErrorMessage } from '@/lib/errorMessage'
 import { useSurveyStore } from '@/stores/surveyStore'
@@ -101,7 +101,7 @@ export default function SurveyCard({ survey }: Props) {
         tabIndex={0}
         onClick={() => navigate(`/app/surveys/${survey.id}/edit`)}
         onKeyDown={(e) => e.key === 'Enter' && navigate(`/app/surveys/${survey.id}/edit`)}
-        className="group rounded-xl border border-gray-200 bg-white overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+        className="group h-full flex flex-col rounded-xl border border-gray-200 bg-white overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         whileHover={{ y: -4, boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}
         whileTap={{ scale: 0.98 }}
         transition={{ duration: 0.18, ease: 'easeOut' }}
@@ -114,7 +114,7 @@ export default function SurveyCard({ survey }: Props) {
         </div>
 
         {/* Title + meta */}
-        <div className="px-3 pt-2.5 pb-2 border-t border-gray-100">
+        <div className="flex-1 px-3 pt-2.5 pb-2 border-t border-gray-100">
           <h3 className="font-medium text-sm text-gray-900 line-clamp-2 leading-snug mb-1.5">
             {survey.title || 'Untitled Survey'}
           </h3>
@@ -128,44 +128,44 @@ export default function SurveyCard({ survey }: Props) {
           </div>
         </div>
 
-        {/* Actions — revealed on hover */}
-        <div className="flex items-center gap-0.5 px-2 py-1 border-t border-gray-100 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        {/* Actions — always visible on mobile, revealed on hover on sm+ */}
+        <div className="flex items-center gap-1 px-2 py-2 sm:py-1 sm:gap-0.5 border-t border-gray-100 transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           <Button
-            variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700"
+            variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-gray-400 hover:text-gray-700"
             title="Edit" onClick={sp(() => navigate(`/app/surveys/${survey.id}/edit`))}
           >
-            <Edit2 className="w-3.5 h-3.5" />
+            <Edit2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </Button>
           <Button
-            variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700"
+            variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-gray-400 hover:text-gray-700"
             title="View responses" onClick={sp(() => navigate(`/app/surveys/${survey.id}/responses`))}
           >
-            <BarChart2 className="w-3.5 h-3.5" />
+            <BarChart2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </Button>
 
           {survey.status === 'draft' && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-green-500 hover:bg-green-50 hover:text-green-700" title="Publish" onClick={handlePublish}>
-              <Send className="w-3.5 h-3.5" />
+            <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-green-500 hover:bg-green-50 hover:text-green-700" title="Publish" onClick={handlePublish}>
+              <Send className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </Button>
           )}
           {survey.status === 'published' && (
             <>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700" title="QR / link" onClick={sp(() => setShowQR(true))}>
-                <QrCode className="w-3.5 h-3.5" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-gray-400 hover:text-gray-700" title="QR / link" onClick={sp(() => setShowQR(true))}>
+                <QrCode className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:bg-orange-50" title="Lock" onClick={handleLock}>
-                <Lock className="w-3.5 h-3.5" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-orange-500 hover:bg-orange-50" title="Lock" onClick={handleLock}>
+                <Lock className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </Button>
             </>
           )}
           {survey.status === 'locked' && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700" title="Unlock" onClick={handleUnlock}>
-              <Unlock className="w-3.5 h-3.5" />
+            <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 text-gray-400 hover:text-gray-700" title="Unlock" onClick={handleUnlock}>
+              <Unlock className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto text-gray-300 hover:text-red-500 hover:bg-red-50" title="Delete" onClick={handleDelete}>
-            <Trash2 className="w-3.5 h-3.5" />
+          <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-8 sm:w-8 ml-auto text-gray-300 hover:text-red-500 hover:bg-red-50" title="Delete" onClick={handleDelete}>
+            <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </Button>
         </div>
       </motion.div>
@@ -177,7 +177,15 @@ export default function SurveyCard({ survey }: Props) {
             <DialogTitle>{t('survey.qrCode')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
-            <QRCodeCanvas value={surveyUrl} size={200} />
+            <div
+              className="p-3 bg-white"
+              style={{
+                border: `2px solid ${survey.qrConfig?.borderColor ?? '#e5e7eb'}`,
+                borderRadius: { none: 0, sm: 8, md: 16, lg: 24 }[survey.qrConfig?.borderRadius ?? 'md'] ?? 16,
+              }}
+            >
+              <QrCodeDisplay value={surveyUrl} size={200} qrConfig={survey.qrConfig} />
+            </div>
             <p className="text-xs text-gray-500 text-center break-all">{surveyUrl}</p>
             <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(surveyUrl); toast.success(t('survey.linkCopied')) }}>
               {t('survey.copyLink')}

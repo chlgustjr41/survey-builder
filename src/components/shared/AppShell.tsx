@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, Globe, ClipboardList } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -32,15 +33,19 @@ export default function AppShell({ children }: AppShellProps) {
             {t('app.name')}
           </button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={toggleLang} className="text-gray-500">
-              <Globe className="w-4 h-4 mr-1" />
-              {i18n.language === 'en' ? '한국어' : 'English'}
-            </Button>
-            {user && (
-              <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-500">
-                <LogOut className="w-4 h-4 mr-1" />
-                {t('auth.signOut')}
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.93 }} transition={{ duration: 0.13 }}>
+              <Button variant="ghost" size="sm" onClick={toggleLang} className="text-gray-500 hover:text-orange-500 hover:bg-orange-50 transition-colors">
+                <Globe className="w-4 h-4 mr-1" />
+                {i18n.language === 'en' ? '한국어' : 'English'}
               </Button>
+            </motion.div>
+            {user && (
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.93 }} transition={{ duration: 0.13 }}>
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors">
+                  <LogOut className="w-4 h-4 mr-1" />
+                  {t('auth.signOut')}
+                </Button>
+              </motion.div>
             )}
           </div>
         </div>
