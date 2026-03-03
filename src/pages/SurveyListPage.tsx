@@ -1,18 +1,42 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, AlertTriangle, RefreshCw, FileText, Loader2, Upload } from 'lucide-react'
+import { Plus, AlertTriangle, RefreshCw, FileText, Loader2, Upload, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
 import { useSurveyStore } from '@/stores/surveyStore'
 import { subscribeToAuthorSurveys, createSurvey, importSurvey } from '@/services/surveyService'
+import { uploadImage } from '@/services/storageService'
 import { normalizeSurvey } from '@/lib/normalize'
 import { remapSurveyIds } from '@/lib/remapSurveyIds'
+import sampleTemplate from '@/data/sampleSurveyTemplate.json'
 import { getErrorMessage } from '@/lib/errorMessage'
 import AppShell from '@/components/shared/AppShell'
 import SurveyCard from '@/components/shared/SurveyCard'
+
+/** Compress an image URL to a ≤256 px JPEG data URL for QR canvas embedding. */
+function compressImageToDataUrl(src: string, maxPx = 256, quality = 0.85): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const scale  = Math.min(1, maxPx / Math.max(img.naturalWidth || 1, img.naturalHeight || 1))
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round((img.naturalWidth  || maxPx) * scale)
+      canvas.height = Math.round((img.naturalHeight || maxPx) * scale)
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      } else {
+        resolve(src)
+      }
+    }
+    img.onerror = () => resolve(src)
+    img.src = src
+  })
+}
 
 // Stagger variants for the survey grid
 const gridVariants = {
@@ -36,6 +60,7 @@ export default function SurveyListPage() {
   const [loadError, setLoadError]   = useState<string | null>(null)
   const [creating, setCreating]     = useState(false)
   const [importing, setImporting]   = useState(false)
+  const [loadingTemplate, setLoadingTemplate] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -116,6 +141,51 @@ export default function SurveyListPage() {
     // Don't reset `importing` on success — component unmounts on navigation
   }
 
+  const handleUseTemplate = async () => {
+    if (!user || loadingTemplate) return
+    setLoadingTemplate(true)
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { __schema_version, __exported_at, id, authorId, createdAt, updatedAt, ...rest } = sampleTemplate as any
+      void __schema_version; void __exported_at; void id; void authorId; void createdAt; void updatedAt
+
+      const normalized = remapSurveyIds(normalizeSurvey({
+        ...rest,
+        id: '',
+        authorId: user.uid,
+        status: 'draft',
+        publishedAt: null,
+        createdAt: 0,
+        updatedAt: 0,
+      }))
+
+      // Upload a fresh copy of the app logo and generate a compressed data URL
+      // for the template survey's QR code logo. Failures are non-fatal.
+      try {
+        const resp      = await fetch('/survey-builder-logo.svg')
+        const blob      = await resp.blob()
+        const logoFile  = new File([blob], 'survey-builder-logo.svg', { type: 'image/svg+xml' })
+        const objectUrl = URL.createObjectURL(blob)
+        const [logoUrl, logoDataUrl] = await Promise.all([
+          uploadImage(logoFile, 'qr-logos'),
+          compressImageToDataUrl(objectUrl),
+        ])
+        URL.revokeObjectURL(objectUrl)
+        normalized.qrConfig = { ...normalized.qrConfig, logoUrl, logoDataUrl }
+      } catch {
+        // Logo upload failed — proceed without logo
+      }
+
+      const created = await importSurvey(user.uid, normalized)
+      toast.success(t('survey.templateLoaded'))
+      navigate(`/app/surveys/${created.id}/edit`)
+    } catch (err) {
+      const { message, detail } = getErrorMessage(err, 'Failed to load template.')
+      toast.error(message, { description: detail })
+      setLoadingTemplate(false)
+    }
+  }
+
   return (
     <AppShell>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -179,6 +249,26 @@ export default function SurveyListPage() {
                   </div>
                   <span className="text-xs font-medium text-gray-600">
                     {creating ? t('survey.creating') : t('survey.blank')}
+                  </span>
+                </motion.button>
+
+                {/* Sample template */}
+                <motion.button
+                  onClick={handleUseTemplate}
+                  disabled={creating || importing || loadingTemplate}
+                  className="group flex flex-col gap-2 text-left disabled:opacity-60"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="w-36 h-28 rounded-xl border-2 border-dashed border-gray-200 bg-white hover:border-orange-400 hover:bg-orange-50/60 transition-all flex items-center justify-center">
+                    {loadingTemplate
+                      ? <Loader2 className="w-7 h-7 text-orange-400 animate-spin" />
+                      : <BookOpen className="w-8 h-8 text-gray-300 group-hover:text-orange-400 transition-colors" />
+                    }
+                  </div>
+                  <span className="text-xs font-medium text-gray-600">
+                    {loadingTemplate ? t('survey.importing') : t('survey.useTemplate')}
                   </span>
                 </motion.button>
 

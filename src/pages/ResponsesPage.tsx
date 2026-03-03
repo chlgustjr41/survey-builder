@@ -106,7 +106,8 @@ export default function ResponsesPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-2">
+          {/* List — hidden on mobile once a response is selected */}
+          <div className={`lg:col-span-2 ${selected ? 'hidden lg:block' : 'block'}`}>
             <ResponseList
               responses={responses}
               survey={survey}
@@ -117,9 +118,15 @@ export default function ResponsesPage() {
               showScore={showScore}
             />
           </div>
-          <div className="lg:col-span-3">
+          {/* Detail — hidden on mobile until a response is selected */}
+          <div className={`lg:col-span-3 ${selected ? 'block' : 'hidden lg:block'}`}>
             {selected && survey ? (
-              <ResponseDetail response={selected} survey={survey} showScore={showScore} />
+              <ResponseDetail
+                response={selected}
+                survey={survey}
+                showScore={showScore}
+                onBack={() => setSelected(null)}
+              />
             ) : (
               <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
                 {t('responses.selectToView')}

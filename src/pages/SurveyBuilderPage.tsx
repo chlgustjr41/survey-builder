@@ -16,7 +16,7 @@ export default function SurveyBuilderPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { draft, initDraft, clearDraft, isDirty, setIsSaving, setIsDirty } = useBuilderStore()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768)
 
   /**
    * Tracks the survey ID that has been loaded into the builder store so we never

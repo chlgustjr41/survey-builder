@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { ChevronLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { indexLabel } from '@/lib/utils'
 import type { Answer, Response } from '@/types/response'
@@ -10,9 +11,10 @@ interface Props {
   response: Response
   survey: Survey
   showScore?: boolean
+  onBack?: () => void
 }
 
-export default function ResponseDetail({ response, survey, showScore = true }: Props) {
+export default function ResponseDetail({ response, survey, showScore = true, onBack }: Props) {
   const { t } = useTranslation()
   const maxScore = getMaxPossibleScore(survey.questions)
   const matchedRanges = matchAllScoreRanges(response.totalScore, survey.resultConfig?.ranges ?? [])
@@ -83,6 +85,17 @@ export default function ResponseDetail({ response, survey, showScore = true }: P
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col">
+
+      {/* ── Mobile back button ─────────────────────────────────────────────── */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="lg:hidden flex items-center gap-1 px-4 py-3 text-sm text-gray-500 hover:text-gray-900 border-b border-gray-100 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {t('responses.backToList')}
+        </button>
+      )}
 
       {/* ── Result summary ──────────────────────────────────────────────────── */}
       {!survey.scoringDisabled ? (

@@ -1,0 +1,234 @@
+{
+  "__schema_version": 1,
+  "title": "Survey Builder – Find Your Perfect Fit",
+  "description": "A short demo survey built with Survey Builder itself. Answer a few questions to discover which features matter most for your use case.",
+  "identificationFields": [
+    {
+      "id": "id_1",
+      "fieldKey": "name",
+      "label": "Full Name",
+      "type": "preset",
+      "required": false
+    }
+  ],
+  "formatConfig": {
+    "sectionIndex": "numeric",
+    "questionIndex": "numeric",
+    "optionIndex": "alpha-lower"
+  },
+  "scoringDisabled": false,
+  "combineResultScreens": false,
+  "sectionOrder": ["sec_1", "sec_2", "sec_3"],
+  "sections": {
+    "sec_1": {
+      "id": "sec_1",
+      "title": "Your Survey Goals",
+      "description": "Tell us what you're looking to accomplish. Your answers help us tailor the experience.",
+      "questionOrder": ["q_1", "q_2", "q_3"],
+      "resultConfig": {
+        "showScore": true,
+        "hideResults": false,
+        "ranges": [
+          {
+            "id": "r_1",
+            "min": 3,
+            "max": 8,
+            "message": "You're just getting started — the core features will serve you perfectly."
+          },
+          {
+            "id": "r_2",
+            "min": 9,
+            "max": 13,
+            "message": "You have solid needs — explore scoring and multi-section layouts."
+          }
+        ],
+        "messages": []
+      },
+      "branchRules": []
+    },
+    "sec_2": {
+      "id": "sec_2",
+      "title": "Feature Priorities",
+      "description": "Which capabilities matter most to you? This section uses scoring to match you to the right features.",
+      "questionOrder": ["q_4", "q_5", "q_6"],
+      "resultConfig": {
+        "showScore": true,
+        "hideResults": false,
+        "ranges": [
+          {
+            "id": "r_3",
+            "min": 3,
+            "max": 9,
+            "message": "Standard features cover your workflow well."
+          },
+          {
+            "id": "r_4",
+            "min": 10,
+            "max": 17,
+            "message": "You'll love the advanced features: branch logic, email automation, and QR customisation."
+          }
+        ],
+        "messages": []
+      },
+      "branchRules": []
+    },
+    "sec_3": {
+      "id": "sec_3",
+      "title": "Experience & Feedback",
+      "description": "Tell us a bit about your background and share any thoughts.",
+      "questionOrder": ["q_7", "tb_1", "q_8"],
+      "resultConfig": {
+        "showScore": false,
+        "hideResults": false,
+        "ranges": [],
+        "messages": [
+          {
+            "id": "m_1",
+            "label": "Thank you for completing the demo! Open the builder and explore all the features you just discovered."
+          }
+        ]
+      },
+      "branchRules": []
+    }
+  },
+  "questions": {
+    "q_1": {
+      "id": "q_1",
+      "sectionId": "sec_1",
+      "type": "choice",
+      "prompt": "What is your primary reason for building surveys?",
+      "required": true,
+      "options": [
+        { "id": "o_1", "label": "Collect customer feedback", "points": 2 },
+        { "id": "o_2", "label": "Run quizzes or knowledge tests", "points": 3 },
+        { "id": "o_3", "label": "Assess employee or student performance", "points": 3 },
+        { "id": "o_4", "label": "Research and data collection", "points": 4 },
+        { "id": "o_5", "label": "Event registration or sign-ups", "points": 1 }
+      ],
+      "choiceConfig": { "selectionMode": "single" }
+    },
+    "q_2": {
+      "id": "q_2",
+      "sectionId": "sec_1",
+      "type": "choice",
+      "prompt": "How will you primarily distribute your surveys?",
+      "required": true,
+      "options": [
+        { "id": "o_6", "label": "Share a direct link", "points": 1 },
+        { "id": "o_7", "label": "QR code on printed or physical material", "points": 3 },
+        { "id": "o_8", "label": "Embed in an email campaign", "points": 2 },
+        { "id": "o_9", "label": "Post on social media", "points": 1 }
+      ],
+      "choiceConfig": { "selectionMode": "single" }
+    },
+    "q_3": {
+      "id": "q_3",
+      "sectionId": "sec_1",
+      "type": "scale",
+      "prompt": "How many surveys do you expect to create per month?",
+      "required": true,
+      "scaleConfig": {
+        "min": 1,
+        "max": 5,
+        "minLabel": "1–2 per month",
+        "maxLabel": "10+ per month",
+        "useValueAsPoints": true
+      }
+    },
+    "q_4": {
+      "id": "q_4",
+      "sectionId": "sec_2",
+      "type": "choice",
+      "prompt": "Which feature matters most to you?",
+      "required": true,
+      "options": [
+        { "id": "o_10", "label": "Scoring and automatic result messages", "points": 4 },
+        { "id": "o_11", "label": "Branch logic — skip to sections based on answers", "points": 4 },
+        { "id": "o_12", "label": "Automated result emails to respondents", "points": 3 },
+        { "id": "o_13", "label": "Branded QR codes", "points": 2 },
+        { "id": "o_14", "label": "Multi-language support", "points": 2 }
+      ],
+      "choiceConfig": { "selectionMode": "single" }
+    },
+    "q_5": {
+      "id": "q_5",
+      "sectionId": "sec_2",
+      "type": "scale",
+      "prompt": "How important is automatic email delivery of results to respondents?",
+      "required": true,
+      "scaleConfig": {
+        "min": 1,
+        "max": 5,
+        "minLabel": "Not important",
+        "maxLabel": "Essential",
+        "useValueAsPoints": true
+      }
+    },
+    "q_6": {
+      "id": "q_6",
+      "sectionId": "sec_2",
+      "type": "choice",
+      "prompt": "How many sections do your surveys typically need?",
+      "required": true,
+      "options": [
+        { "id": "o_15", "label": "Just one", "points": 1 },
+        { "id": "o_16", "label": "2–3 sections", "points": 2 },
+        { "id": "o_17", "label": "4–6 sections", "points": 3 },
+        { "id": "o_18", "label": "More than 6", "points": 4 }
+      ],
+      "choiceConfig": { "selectionMode": "single" }
+    },
+    "q_7": {
+      "id": "q_7",
+      "sectionId": "sec_3",
+      "type": "choice",
+      "prompt": "Have you used a survey tool before?",
+      "required": true,
+      "options": [
+        { "id": "o_19", "label": "Never — this is my first time", "points": 0 },
+        { "id": "o_20", "label": "I've tried free tools only", "points": 0 },
+        { "id": "o_21", "label": "I've used paid tools (Google Forms, Typeform…)", "points": 0 },
+        { "id": "o_22", "label": "I'm a survey power user", "points": 0 }
+      ],
+      "choiceConfig": { "selectionMode": "single" }
+    },
+    "q_8": {
+      "id": "q_8",
+      "sectionId": "sec_3",
+      "type": "text",
+      "prompt": "What is the one feature that would make Survey Builder perfect for you?",
+      "required": false,
+      "textConfig": { "size": "long" }
+    }
+  },
+  "textBlocks": {
+    "tb_1": {
+      "id": "tb_1",
+      "sectionId": "sec_3",
+      "content": "The question below is completely optional — feel free to skip it. Your honest answer helps us improve the product."
+    }
+  },
+  "resultConfig": {
+    "showScore": false,
+    "hideResults": true,
+    "ranges": [],
+    "messages": []
+  },
+  "emailConfig": {
+    "enabled": false,
+    "subject": "",
+    "bodyHtml": ""
+  },
+  "schedule": {
+    "openAt": null,
+    "closeAt": null
+  },
+  "qrConfig": {
+    "dotStyle": "rounded",
+    "dotColor": "#f97316",
+    "finderColor": "#ea580c",
+    "finderShape": "rounded",
+    "borderColor": "#f97316",
+    "borderRadius": "lg"
+  }
+}

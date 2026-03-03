@@ -43,7 +43,9 @@
     "loading": "Loading your surveys…",
     "loadError": "Could not load surveys",
     "noSurveysYet": "No surveys yet",
-    "noSurveysHint": "Click \"Blank survey\" above to create your first one"
+    "noSurveysHint": "Click \"Blank survey\" above to create your first one",
+    "useTemplate": "Use template",
+    "templateLoaded": "Template loaded!"
   },
   "builder": {
     "settings": "Survey Settings",
@@ -76,6 +78,9 @@
     "addFirstSection": "Add first section",
     "schedule": {
       "title": "Schedule",
+      "enable": "Enable schedule",
+      "hint": "Set open and close times to automatically control survey availability.",
+      "dateRange": "Date Range",
       "openAt": "Open At",
       "closeAt": "Close At",
       "noSchedule": "No schedule (always open when published)",
@@ -86,6 +91,7 @@
       "addField": "Add Field",
       "fieldLabel": "Field Label",
       "hint": "Collect respondent info before showing the survey.",
+      "presetFields": "Preset Fields",
       "customFields": "Custom Fields",
       "fieldLabelPlaceholder": "Field label…",
       "preset": {
@@ -141,6 +147,7 @@
     },
     "email": {
       "title": "Email Automation",
+      "automation": "Automation",
       "enable": "Enable automated email",
       "subject": "Email Subject",
       "body": "Email Body (HTML)",
@@ -364,6 +371,7 @@
       "score": "Score",
       "actions": "Actions"
     },
+    "backToList": "Back to responses",
     "noResponses": "No responses yet.",
     "noFiltersMatch": "No responses match the current filters.",
     "detail": {
@@ -372,6 +380,44 @@
       "pts": "pts",
       "noAnswers": "No answers recorded.",
       "noAnswer": "(no response)"
+    }
+  },
+  "feedback": {
+    "button": "Help",
+    "title": "Help & Feedback",
+    "tabGuide": "App Guide",
+    "tabFeedback": "Send Feedback",
+    "guide": {
+      "intro": "Survey Builder lets you create, publish, and analyse surveys in minutes. Here's what you can do:",
+      "sendFeedback": "Send feedback or report a bug",
+      "feature": {
+        "sections": "Sections & Questions",
+        "sectionsDesc": "Build multi-section surveys with choice, scale, or text questions. Drag to reorder anything.",
+        "questions": "Scoring",
+        "questionsDesc": "Assign point values to choices and scale questions. Each section can have its own result screen with score ranges.",
+        "scoring": "Result Screens",
+        "scoringDesc": "Configure per-section or combined result screens with score-range messages and optional images.",
+        "branch": "Branch Logic",
+        "branchDesc": "Redirect respondents to different sections based on their answer to a choice question or their running score.",
+        "visibility": "Draft Visibility",
+        "visibilityDesc": "Hide sections or questions while drafting without deleting them — they won't appear to respondents.",
+        "email": "Email Automation",
+        "emailDesc": "Automatically send respondents a personalised email with their score after submission.",
+        "qr": "QR Code",
+        "qrDesc": "Generate a branded QR code for your survey — customise dot style, colours, and add a logo."
+      }
+    },
+    "form": {
+      "intro": "Found a bug or have an idea? Send it directly to the developer.",
+      "type": "Type",
+      "typeBug": "Bug Report",
+      "typeFeature": "Feature Request",
+      "subject": "Subject",
+      "subjectPlaceholder": "Short description…",
+      "message": "Message",
+      "messagePlaceholder": "Describe the issue or idea in detail…",
+      "send": "Open in Mail App",
+      "hint": "This will open your default mail app with the message pre-filled."
     }
   },
   "common": {

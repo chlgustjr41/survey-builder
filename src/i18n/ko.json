@@ -43,7 +43,9 @@
     "loading": "설문 불러오는 중…",
     "loadError": "설문을 불러올 수 없습니다",
     "noSurveysYet": "아직 설문이 없습니다",
-    "noSurveysHint": "위의 \"빈 설문\"을 클릭해 첫 번째 설문을 만드세요"
+    "noSurveysHint": "위의 \"빈 설문\"을 클릭해 첫 번째 설문을 만드세요",
+    "useTemplate": "템플릿 사용",
+    "templateLoaded": "템플릿이 로드되었습니다!"
   },
   "builder": {
     "settings": "설문 설정",
@@ -76,6 +78,9 @@
     "addFirstSection": "첫 번째 섹션 추가",
     "schedule": {
       "title": "일정",
+      "enable": "일정 활성화",
+      "hint": "시작 및 종료 시간을 설정하여 설문 가용성을 자동으로 제어하세요.",
+      "dateRange": "날짜 범위",
       "openAt": "시작 시간",
       "closeAt": "종료 시간",
       "noSchedule": "일정 없음 (게시 시 항상 열림)",
@@ -86,6 +91,7 @@
       "addField": "필드 추가",
       "fieldLabel": "필드 레이블",
       "hint": "설문 표시 전에 응답자 정보를 수집하세요.",
+      "presetFields": "기본 필드",
       "customFields": "사용자 정의 필드",
       "fieldLabelPlaceholder": "필드 레이블…",
       "preset": {
@@ -141,6 +147,7 @@
     },
     "email": {
       "title": "이메일 자동화",
+      "automation": "자동화",
       "enable": "자동 이메일 발송 활성화",
       "subject": "이메일 제목",
       "body": "이메일 본문 (HTML)",
@@ -364,6 +371,7 @@
       "score": "점수",
       "actions": "작업"
     },
+    "backToList": "응답 목록으로",
     "noResponses": "아직 응답이 없습니다.",
     "noFiltersMatch": "현재 필터에 맞는 응답이 없습니다.",
     "detail": {
@@ -372,6 +380,44 @@
       "pts": "점",
       "noAnswers": "기록된 답변이 없습니다.",
       "noAnswer": "(응답 없음)"
+    }
+  },
+  "feedback": {
+    "button": "도움말",
+    "title": "도움말 및 피드백",
+    "tabGuide": "앱 가이드",
+    "tabFeedback": "피드백 보내기",
+    "guide": {
+      "intro": "Survey Builder로 몇 분 안에 설문을 만들고, 게시하고, 분석할 수 있습니다. 주요 기능을 소개합니다:",
+      "sendFeedback": "피드백 보내기 또는 버그 신고",
+      "feature": {
+        "sections": "섹션 및 질문",
+        "sectionsDesc": "객관식, 척도, 텍스트 질문으로 다중 섹션 설문을 만드세요. 드래그로 순서를 변경할 수 있습니다.",
+        "questions": "채점",
+        "questionsDesc": "객관식 및 척도 질문에 점수를 할당하세요. 각 섹션에는 점수 범위가 있는 독립적인 결과 화면을 설정할 수 있습니다.",
+        "scoring": "결과 화면",
+        "scoringDesc": "점수 범위 메시지와 선택적 이미지로 섹션별 또는 통합 결과 화면을 구성하세요.",
+        "branch": "분기 로직",
+        "branchDesc": "객관식 답변이나 누적 점수에 따라 응답자를 다른 섹션으로 이동시킬 수 있습니다.",
+        "visibility": "초안 가시성",
+        "visibilityDesc": "섹션이나 질문을 삭제하지 않고 숨길 수 있습니다 — 응답자에게는 표시되지 않습니다.",
+        "email": "이메일 자동화",
+        "emailDesc": "제출 후 응답자에게 점수가 포함된 맞춤형 이메일을 자동으로 발송합니다.",
+        "qr": "QR 코드",
+        "qrDesc": "설문용 브랜드 QR 코드를 생성하세요 — 점 스타일, 색상, 로고를 커스터마이징할 수 있습니다."
+      }
+    },
+    "form": {
+      "intro": "버그를 발견했거나 아이디어가 있으신가요? 개발자에게 직접 보내세요.",
+      "type": "유형",
+      "typeBug": "버그 신고",
+      "typeFeature": "기능 요청",
+      "subject": "제목",
+      "subjectPlaceholder": "간단한 설명…",
+      "message": "내용",
+      "messagePlaceholder": "문제나 아이디어를 자세히 설명해 주세요…",
+      "send": "메일 앱으로 열기",
+      "hint": "기본 메일 앱이 내용이 미리 채워진 상태로 열립니다."
     }
   },
   "common": {

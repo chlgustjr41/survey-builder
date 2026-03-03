@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <style>
+      .orange-body { fill: #FF8C00; }
+      .leaf { fill: #4CAF50; }
+      .stem { fill: #6D4C41; }
+      .letter-s { fill: #FFFFFF; font-family: 'Segoe UI', Arial, sans-serif; font-weight: 900; font-size: 160px; }
+      .app-name { fill: #FF8C00; font-family: 'Segoe UI', Arial, sans-serif; font-weight: 700; font-size: 36px; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+  </defs>
+
+  <rect width="400" height="400" fill="white"/>
+
+  <path class="stem" d="M180,75 Q200,20 220,50" stroke="#6D4C41" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <path class="leaf" d="M205,45 Q240,10 270,50 Q230,70 205,45" />
+
+  <circle class="orange-body" cx="200" cy="200" r="140" />
+
+  <text x="50%" y="215" text-anchor="middle" dominant-baseline="middle" class="letter-s">S</text>
+</svg>

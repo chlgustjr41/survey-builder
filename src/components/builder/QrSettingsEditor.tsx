@@ -76,6 +76,10 @@ function parseHex(raw: string): string | null {
   return /^[0-9A-Fa-f]{6}$/.test(clean) ? `#${clean.toLowerCase()}` : null
 }
 
+function Divider() {
+  return <div className="border-t border-gray-100 -mx-4" />
+}
+
 export default function QrSettingsEditor() {
   const { t } = useTranslation()
   const { draft, updateMeta } = useBuilderStore()
@@ -94,9 +98,9 @@ export default function QrSettingsEditor() {
   const [borderColorDraft, setBorderColorDraft] = useState<string | null>(null)
   const [dotColorDraft,    setDotColorDraft]    = useState<string | null>(null)
 
-  const finderColorTimer = useRef<ReturnType<typeof setTimeout>>()
-  const borderColorTimer = useRef<ReturnType<typeof setTimeout>>()
-  const dotColorTimer    = useRef<ReturnType<typeof setTimeout>>()
+  const finderColorTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const borderColorTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const dotColorTimer    = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // Sync local color state when the store resets it externally
   useEffect(() => {
@@ -284,6 +288,8 @@ export default function QrSettingsEditor() {
         </div>
       </div>
 
+      <Divider />
+
       {/* Logo upload */}
       <div className="flex flex-col gap-1.5">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
@@ -338,9 +344,10 @@ export default function QrSettingsEditor() {
         <p className="text-[10px] text-gray-400 leading-snug">{t('builder.qr.logoHint')}</p>
       </div>
 
-      {/* Logo size + shape (only when a logo exists) */}
+      {/* Logo size (only when a logo exists) */}
       {qr.logoUrl && (
         <>
+          <Divider />
           <div className="flex flex-col gap-1.5">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
               {t('builder.qr.logoSize')}
@@ -361,9 +368,10 @@ export default function QrSettingsEditor() {
               ))}
             </div>
           </div>
-
         </>
       )}
+
+      <Divider />
 
       {/* QR Dots — shape + color */}
       <div className="flex flex-col gap-2">
@@ -420,6 +428,8 @@ export default function QrSettingsEditor() {
         )}
       </div>
 
+      <Divider />
+
       {/* Finder patterns (corner squares / eyes) */}
       <div className="flex flex-col gap-2">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
@@ -474,6 +484,8 @@ export default function QrSettingsEditor() {
           </button>
         )}
       </div>
+
+      <Divider />
 
       {/* Border */}
       <div className="flex flex-col gap-2">

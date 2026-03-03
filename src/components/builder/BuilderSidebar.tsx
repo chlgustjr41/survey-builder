@@ -133,7 +133,7 @@ export default function BuilderSidebar({ isOpen, onToggle }: Props) {
           (its width=0 has no layout effect); opacity handles show/hide instead. */}
       <div
         className={`overflow-hidden shrink-0 h-full ${
-          isResizing ? '' : 'transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]'
+          isResizing ? '' : 'transition-[width] duration-300 ease-in-out'
         }`}
         style={{ width: isMobile ? 0 : (isOpen ? sidebarWidth : 0) }}
       >
@@ -141,8 +141,10 @@ export default function BuilderSidebar({ isOpen, onToggle }: Props) {
             "containing block" for position:fixed children (Radix dialogs), which
             would shift the portal off-screen. Opacity-only is safe.           */}
         <motion.aside
-          className={`relative bg-white border-r border-gray-200 flex flex-col h-full ${
-            isMobile ? 'fixed top-14 bottom-0 left-0 z-30 shadow-xl' : ''
+          className={`bg-white border-r border-gray-200 flex flex-col h-full ${
+            isMobile
+              ? 'fixed top-14 bottom-0 left-0 z-30 shadow-xl'
+              : 'relative'
           }`}
           style={{
             width: sidebarWidth,
