@@ -9,8 +9,6 @@
     </style>
   </defs>
 
-  <rect width="400" height="400" fill="white"/>
-
   <path class="stem" d="M180,75 Q200,20 220,50" stroke="#6D4C41" stroke-width="2" fill="none" stroke-linecap="round"/>
   
   <path class="leaf" d="M205,45 Q240,10 270,50 Q230,70 205,45" />

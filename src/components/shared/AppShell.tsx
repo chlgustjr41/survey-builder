@@ -27,7 +27,7 @@ export default function AppShell({ children }: AppShellProps) {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
-            onClick={() => navigate('/app')}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2 font-semibold text-gray-900 hover:text-orange-500 transition-colors"
           >
             <img src="/survey-builder-logo.svg" alt="SurveyBuilder" className="w-7 h-7" />
@@ -47,12 +47,25 @@ export default function AppShell({ children }: AppShellProps) {
               </Button>
             </motion.div>
             {user && (
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.93 }} transition={{ duration: 0.13 }}>
-                <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors">
-                  <LogOut className="w-4 h-4 mr-1" />
-                  {t('auth.signOut')}
-                </Button>
-              </motion.div>
+              <>
+                <div className="flex items-center gap-2 pl-1 pr-2">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={user.displayName ?? ''} referrerPolicy="no-referrer" className="w-7 h-7 rounded-full object-cover ring-1 ring-gray-200" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-semibold">
+                      {(user.displayName ?? user.email ?? '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-30 truncate">
+                    {user.displayName ?? user.email}
+                  </span>
+                </div>
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.93 }} transition={{ duration: 0.13 }}>
+                  <Button variant="ghost" size="sm" onClick={signOut} title={t('auth.signOut')} className="text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors px-2">
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+              </>
             )}
           </div>
         </div>

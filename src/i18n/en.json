@@ -420,6 +420,58 @@
       "hint": "This will open your default mail app with the message pre-filled."
     }
   },
+  "landing": {
+    "hero": {
+      "badge": "Free to use — no credit card required",
+      "headlinePart1": "Build surveys that",
+      "headlinePart2": "actually work",
+      "description": "A powerful survey builder with branching logic, auto-scoring, real-time response tracking, and instant QR code sharing — all in one place.",
+      "cta": "Continue with Google",
+      "ctaHint": "Sign up is instant — no forms, no waiting.",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "stats": {
+      "types": "Question types",
+      "rules": "Branch rules",
+      "live": "Live responses",
+      "langs": "Languages"
+    },
+    "features": {
+      "tag": "Features",
+      "heading": "Everything you need to run great surveys",
+      "subheading": "From building to sharing to analysing — SurveyBuilder handles the entire lifecycle without any third-party tools.",
+      "types": { "title": "Multiple Question Types", "desc": "Choose from multiple-choice, scale ratings, open-text, and text blocks — all configurable with custom scoring and indexed labels." },
+      "branch": { "title": "Branch Logic", "desc": "Guide respondents down personalised paths. Define rules that jump to different sections based on answers or running score." },
+      "scoring": { "title": "Scoring & Results", "desc": "Assign point values to any answer. Configurable score ranges trigger custom result messages and images after each section." },
+      "dashboard": { "title": "Real-time Dashboard", "desc": "Watch responses arrive live. Filter by name, date, or score range — and drill into the full answer breakdown for any respondent." },
+      "qr": { "title": "QR Code Sharing", "desc": "Every survey gets a branded QR code. Customise the border and corner style, then download a high-res PNG ready for print." },
+      "multilingual": { "title": "Multilingual", "desc": "The builder and responder both support English and Korean. Set a per-survey default language for your respondents." }
+    },
+    "steps": {
+      "tag": "How it works",
+      "heading": "From idea to insights in minutes",
+      "design": { "title": "Design your survey", "desc": "Add sections and questions using the drag-and-drop canvas. Configure scoring, branching, and result screens as you go." },
+      "share": { "title": "Share with respondents", "desc": "Publish in one click and share the unique link or QR code. Gate access with a password or schedule open/close times." },
+      "analyse": { "title": "Analyse the results", "desc": "Open the response dashboard to see every answer, filter by score, and explore detailed breakdowns — all in real time." }
+    },
+    "useCases": {
+      "tag": "Use cases",
+      "heading": "Surveys for every occasion",
+      "personality": { "title": "Personality quizzes", "desc": "Score answers and reveal personalised results at the end with custom messages per score range.", "check0": "Score-based outcomes", "check1": "Per-section result screens", "check2": "Image attachments" },
+      "feedback": { "title": "Customer feedback", "desc": "Collect structured feedback with scale ratings and open text, then filter the dashboard by score.", "check0": "Scale & rating questions", "check1": "Searchable dashboard", "check2": "Export-ready data" },
+      "events": { "title": "Event registration", "desc": "Gate your form with a password, collect identification fields, and prevent duplicate submissions.", "check0": "Password protection", "check1": "Duplicate detection", "check2": "Schedule open/close" },
+      "assessments": { "title": "Educational assessments", "desc": "Build auto-graded tests with correct-answer scoring and share via QR code in the classroom.", "check0": "Auto scoring", "check1": "Branch by performance", "check2": "QR code handout" }
+    },
+    "cta": {
+      "heading": "Ready to build your first survey?",
+      "description": "Sign in with Google and start building in seconds. It's completely free.",
+      "button": "Get started with Google"
+    },
+    "footer": {
+      "developedBy": "Developed by",
+      "copyright": "© {{year}} SurveyBuilder. All rights reserved."
+    }
+  },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",

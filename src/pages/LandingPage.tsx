@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, useInView } from 'framer-motion'
@@ -49,77 +49,21 @@ function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
-// ── Feature card data ───────────────────────────────────────────────────────────
-const features = [
-  {
-    icon: LayoutList,
-    title: 'Multiple Question Types',
-    desc: 'Choose from multiple-choice, scale ratings, open-text, and text blocks — all configurable with custom scoring and indexed labels.',
-  },
-  {
-    icon: GitBranch,
-    title: 'Branch Logic',
-    desc: 'Guide respondents down personalised paths. Define rules that jump to different sections based on answers or running score.',
-  },
-  {
-    icon: Star,
-    title: 'Scoring & Results',
-    desc: 'Assign point values to any answer. Configurable score ranges trigger custom result messages and images after each section.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Real-time Dashboard',
-    desc: 'Watch responses arrive live. Filter by name, date, or score range — and drill into the full answer breakdown for any respondent.',
-  },
-  {
-    icon: QrCode,
-    title: 'QR Code Sharing',
-    desc: 'Every survey gets a branded QR code. Customise the border and corner style, then download a high-res PNG ready for print.',
-  },
-  {
-    icon: Globe,
-    title: 'Multilingual',
-    desc: 'The builder and responder both support English and Korean. Set a per-survey default language for your respondents.',
-  },
-]
-
-// ── How it works steps ──────────────────────────────────────────────────────────
-const steps = [
-  {
-    icon: FileText,
-    number: '01',
-    title: 'Design your survey',
-    desc: 'Add sections and questions using the drag-and-drop canvas. Configure scoring, branching, and result screens as you go.',
-  },
-  {
-    icon: MessageSquare,
-    number: '02',
-    title: 'Share with respondents',
-    desc: 'Publish in one click and share the unique link or QR code. Gate access with a password or schedule open/close times.',
-  },
-  {
-    icon: Sliders,
-    number: '03',
-    title: 'Analyse the results',
-    desc: 'Open the response dashboard to see every answer, filter by score, and explore detailed breakdowns — all in real time.',
-  },
-]
-
 // ── Main component ──────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user, loading, signIn } = useAuthStore()
   const navigate = useNavigate()
   const [signingIn, setSigningIn] = useState(false)
 
-  useEffect(() => {
-    if (!loading && user) navigate('/app')
-  }, [user, loading, navigate])
+  // No auto-redirect: logged-in users can visit the landing page and navigate
+  // back to the dashboard by clicking their profile in the navbar.
 
   const handleSignIn = async () => {
     setSigningIn(true)
     try {
       await signIn()
+      navigate('/app')
     } catch (err) {
       if (!isUserCancelledAuth(err)) {
         const { message, detail } = getErrorMessage(err, 'Sign-in failed. Please try again.')
@@ -130,10 +74,33 @@ export default function LandingPage() {
     }
   }
 
-  const featuresRef  = useFadeInRef()
-  const stepsRef     = useFadeInRef()
-  const ctaRef       = useFadeInRef()
-  const footerRef    = useFadeInRef()
+  const featuresRef = useFadeInRef()
+  const stepsRef    = useFadeInRef()
+  const ctaRef      = useFadeInRef()
+  const footerRef   = useFadeInRef()
+
+  // Feature cards — defined inside component so t() resolves on language change
+  const featureItems = [
+    { icon: LayoutList,   title: t('landing.features.types.title'),       desc: t('landing.features.types.desc') },
+    { icon: GitBranch,    title: t('landing.features.branch.title'),      desc: t('landing.features.branch.desc') },
+    { icon: Star,         title: t('landing.features.scoring.title'),     desc: t('landing.features.scoring.desc') },
+    { icon: BarChart3,    title: t('landing.features.dashboard.title'),   desc: t('landing.features.dashboard.desc') },
+    { icon: QrCode,       title: t('landing.features.qr.title'),          desc: t('landing.features.qr.desc') },
+    { icon: Globe,        title: t('landing.features.multilingual.title'),desc: t('landing.features.multilingual.desc') },
+  ]
+
+  const stepItems = [
+    { icon: FileText,      title: t('landing.steps.design.title'),  desc: t('landing.steps.design.desc') },
+    { icon: MessageSquare, title: t('landing.steps.share.title'),   desc: t('landing.steps.share.desc') },
+    { icon: Sliders,       title: t('landing.steps.analyse.title'), desc: t('landing.steps.analyse.desc') },
+  ]
+
+  const useCaseItems = [
+    { title: t('landing.useCases.personality.title'),  desc: t('landing.useCases.personality.desc'),  checks: [t('landing.useCases.personality.check0'),  t('landing.useCases.personality.check1'),  t('landing.useCases.personality.check2')] },
+    { title: t('landing.useCases.feedback.title'),     desc: t('landing.useCases.feedback.desc'),     checks: [t('landing.useCases.feedback.check0'),     t('landing.useCases.feedback.check1'),     t('landing.useCases.feedback.check2')] },
+    { title: t('landing.useCases.events.title'),       desc: t('landing.useCases.events.desc'),       checks: [t('landing.useCases.events.check0'),       t('landing.useCases.events.check1'),       t('landing.useCases.events.check2')] },
+    { title: t('landing.useCases.assessments.title'),  desc: t('landing.useCases.assessments.desc'),  checks: [t('landing.useCases.assessments.check0'),  t('landing.useCases.assessments.check1'),  t('landing.useCases.assessments.check2')] },
+  ]
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -145,15 +112,53 @@ export default function LandingPage() {
             <img src="/survey-builder-logo.svg" alt="SurveyBuilder" className="w-7 h-7" />
             <span className="font-semibold text-gray-900 text-sm tracking-tight">SurveyBuilder</span>
           </div>
-          <Button
-            size="sm"
-            onClick={handleSignIn}
-            disabled={loading || signingIn}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-semibold px-4"
-          >
-            {signingIn ? t('auth.signingIn') : 'Sign in'}
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const next = i18n.language === 'en' ? 'ko' : 'en'
+                i18n.changeLanguage(next)
+                localStorage.setItem('lang', next)
+              }}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-orange-500 transition-colors px-2 py-1 rounded-md hover:bg-orange-50"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {i18n.language === 'en' ? '한국어' : 'English'}
+            </button>
+
+            {user ? (
+              <button
+                onClick={() => navigate('/app')}
+                className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg px-3 py-1.5 transition-colors"
+              >
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName ?? ''}
+                    referrerPolicy="no-referrer"
+                    className="w-6 h-6 rounded-full object-cover ring-1 ring-orange-200"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-semibold">
+                    {(user.displayName ?? user.email ?? '?')[0].toUpperCase()}
+                  </div>
+                )}
+                <span className="hidden sm:block text-xs font-medium text-orange-700 max-w-24 truncate">
+                  {user.displayName ?? user.email}
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-orange-500" />
+              </button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleSignIn}
+                disabled={loading || signingIn}
+                className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-semibold px-4"
+              >
+                {signingIn ? t('auth.signingIn') : 'Sign in'}
+                <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -176,7 +181,7 @@ export default function LandingPage() {
           {/* Badge */}
           <motion.div variants={fadeUp} custom={1} className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 rounded-full px-3.5 py-1 text-xs font-semibold mb-8 border border-orange-200">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-            Free to use — no credit card required
+            {t('landing.hero.badge')}
           </motion.div>
 
           <motion.h1
@@ -184,9 +189,9 @@ export default function LandingPage() {
             custom={2}
             className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6"
           >
-            Build surveys that{' '}
+            {t('landing.hero.headlinePart1')}{' '}
             <span className="text-orange-500 relative">
-              actually work
+              {t('landing.hero.headlinePart2')}
               <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 300 12" fill="none" preserveAspectRatio="none">
                 <path d="M2 9 Q75 2 150 9 Q225 16 298 9" stroke="#f97316" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.5"/>
               </svg>
@@ -198,20 +203,30 @@ export default function LandingPage() {
             custom={3}
             className="text-lg sm:text-xl text-gray-500 leading-relaxed mb-10 max-w-xl mx-auto"
           >
-            A powerful survey builder with branching logic, auto-scoring, real-time response tracking, and instant QR code sharing — all in one place.
+            {t('landing.hero.description')}
           </motion.p>
 
-          <motion.div variants={fadeUp} custom={4} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={handleSignIn}
-              disabled={loading || signingIn}
-              className="group flex items-center gap-3 bg-white border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all rounded-xl px-5 py-3.5 text-sm font-medium text-gray-700 shadow-sm disabled:opacity-60"
-            >
-              <GoogleIcon className="w-5 h-5" />
-              {signingIn ? 'Signing in…' : 'Continue with Google'}
-              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
-            </button>
-            <p className="text-xs text-gray-400">Sign up is instant — no forms, no waiting.</p>
+          <motion.div variants={fadeUp} custom={4} className="flex flex-col items-center justify-center gap-3">
+            {user ? (
+              <button
+                onClick={() => navigate('/app')}
+                className="group flex items-center gap-3 bg-white border border-orange-300 hover:border-orange-400 hover:shadow-md transition-all rounded-xl px-5 py-3.5 text-sm font-medium text-orange-600 shadow-sm"
+              >
+                {t('landing.hero.goToDashboard')}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                disabled={loading || signingIn}
+                className="group flex items-center gap-3 bg-white border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all rounded-xl px-5 py-3.5 text-sm font-medium text-gray-700 shadow-sm disabled:opacity-60"
+              >
+                <GoogleIcon className="w-5 h-5" />
+                {signingIn ? t('auth.signingIn') : t('landing.hero.cta')}
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+              </button>
+            )}
+            <p className="text-xs text-gray-400">{t('landing.hero.ctaHint')}</p>
           </motion.div>
         </motion.div>
 
@@ -223,10 +238,10 @@ export default function LandingPage() {
           className="max-w-4xl mx-auto mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3"
         >
           {[
-            { label: 'Question types', value: '3+' },
-            { label: 'Branch rules', value: '∞' },
-            { label: 'Live responses', value: '⚡' },
-            { label: 'Languages', value: '2' },
+            { label: t('landing.stats.types'), value: '3+' },
+            { label: t('landing.stats.rules'), value: '∞' },
+            { label: t('landing.stats.live'),  value: '⚡' },
+            { label: t('landing.stats.langs'), value: '2' },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -247,15 +262,13 @@ export default function LandingPage() {
           className="max-w-6xl mx-auto"
         >
           <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
-            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">Features</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Everything you need to run great surveys</h2>
-            <p className="mt-4 text-gray-500 max-w-xl mx-auto">
-              From building to sharing to analysing — SurveyBuilder handles the entire lifecycle without any third-party tools.
-            </p>
+            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">{t('landing.features.tag')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t('landing.features.heading')}</h2>
+            <p className="mt-4 text-gray-500 max-w-xl mx-auto">{t('landing.features.subheading')}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((f, i) => (
+            {featureItems.map((f, i) => (
               <motion.div
                 key={f.title}
                 variants={fadeUp}
@@ -281,15 +294,15 @@ export default function LandingPage() {
           className="max-w-5xl mx-auto"
         >
           <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
-            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">From idea to insights in minutes</h2>
+            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">{t('landing.steps.tag')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{t('landing.steps.heading')}</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step, i) => (
-              <motion.div key={step.number} variants={fadeUp} custom={i + 1} className="relative">
+            {stepItems.map((step, i) => (
+              <motion.div key={step.title} variants={fadeUp} custom={i + 1} className="relative">
                 {/* Connector line between steps */}
-                {i < steps.length - 1 && (
+                {i < stepItems.length - 1 && (
                   <div className="hidden md:block absolute top-7 left-[calc(50%+2.5rem)] w-[calc(100%-5rem)] h-px border-t-2 border-dashed border-orange-200" />
                 )}
                 <div className="flex flex-col items-center text-center gap-4">
@@ -316,16 +329,11 @@ export default function LandingPage() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">Use cases</p>
-            <h2 className="text-3xl font-bold text-gray-900">Surveys for every occasion</h2>
+            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-3">{t('landing.useCases.tag')}</p>
+            <h2 className="text-3xl font-bold text-gray-900">{t('landing.useCases.heading')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { title: 'Personality quizzes', desc: 'Score answers and reveal personalised results at the end with custom messages per score range.', checks: ['Score-based outcomes', 'Per-section result screens', 'Image attachments'] },
-              { title: 'Customer feedback', desc: 'Collect structured feedback with scale ratings and open text, then filter the dashboard by score.', checks: ['Scale & rating questions', 'Searchable dashboard', 'Export-ready data'] },
-              { title: 'Event registration', desc: 'Gate your form with a password, collect identification fields, and prevent duplicate submissions.', checks: ['Password protection', 'Duplicate detection', 'Schedule open/close'] },
-              { title: 'Educational assessments', desc: 'Build auto-graded tests with correct-answer scoring and share via QR code in the classroom.', checks: ['Auto scoring', 'Branch by performance', 'QR code handout'] },
-            ].map((card) => (
+            {useCaseItems.map((card) => (
               <div key={card.title} className="border border-gray-100 rounded-2xl p-6 hover:border-orange-200 hover:shadow-sm transition-all">
                 <h3 className="font-semibold text-gray-900 mb-2">{card.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-4">{card.desc}</p>
@@ -351,21 +359,31 @@ export default function LandingPage() {
           className="max-w-2xl mx-auto text-center"
         >
           <motion.h2 variants={fadeUp} custom={0} className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight">
-            Ready to build your first survey?
+            {t('landing.cta.heading')}
           </motion.h2>
           <motion.p variants={fadeUp} custom={1} className="text-orange-100 text-lg mb-10">
-            Sign in with Google and start building in seconds. It's completely free.
+            {t('landing.cta.description')}
           </motion.p>
           <motion.div variants={fadeUp} custom={2}>
-            <button
-              onClick={handleSignIn}
-              disabled={loading || signingIn}
-              className="group inline-flex items-center gap-3 bg-white hover:bg-orange-50 text-gray-800 font-semibold rounded-xl px-7 py-4 shadow-lg hover:shadow-xl transition-all text-sm disabled:opacity-60"
-            >
-              <GoogleIcon className="w-5 h-5" />
-              {signingIn ? 'Signing in…' : 'Get started with Google'}
-              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
-            </button>
+            {user ? (
+              <button
+                onClick={() => navigate('/app')}
+                className="group inline-flex items-center gap-3 bg-white hover:bg-orange-50 text-orange-600 font-semibold rounded-xl px-7 py-4 shadow-lg hover:shadow-xl transition-all text-sm"
+              >
+                {t('landing.hero.goToDashboard')}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSignIn}
+                disabled={loading || signingIn}
+                className="group inline-flex items-center gap-3 bg-white hover:bg-orange-50 text-gray-800 font-semibold rounded-xl px-7 py-4 shadow-lg hover:shadow-xl transition-all text-sm disabled:opacity-60"
+              >
+                <GoogleIcon className="w-5 h-5" />
+                {signingIn ? t('auth.signingIn') : t('landing.cta.button')}
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+              </button>
+            )}
           </motion.div>
         </motion.div>
       </section>
@@ -397,7 +415,7 @@ export default function LandingPage() {
               className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-200 ring-offset-2"
             />
             <p className="text-sm text-gray-500">
-              Developed by{' '}
+              {t('landing.footer.developedBy')}{' '}
               <a
                 href="mailto:chlgustjr41@gmail.com"
                 className="font-medium text-orange-500 hover:text-orange-600 transition-colors"
@@ -408,7 +426,7 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.p variants={fadeUp} custom={3} className="text-xs text-gray-400 mt-2">
-            © {new Date().getFullYear()} SurveyBuilder. All rights reserved.
+            {t('landing.footer.copyright', { year: new Date().getFullYear() })}
           </motion.p>
         </motion.div>
       </footer>
