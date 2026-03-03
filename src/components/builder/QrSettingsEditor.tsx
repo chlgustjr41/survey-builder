@@ -47,9 +47,9 @@ const MAX_FILE_MB = 2
 
 /**
  * Resize + compress a data URL to at most `maxPx` × `maxPx` JPEG.
- * Keeps the logo small enough to store in Firebase RTDB (typically ≤ 40 KB base64).
+ * Keeps the logo small enough to store in Firebase RTDB while preserving transparency.
  */
-function compressDataUrl(dataUrl: string, maxPx = 256, quality = 0.85): Promise<string> {
+function compressDataUrl(dataUrl: string, maxPx = 256): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {
@@ -59,10 +59,8 @@ function compressDataUrl(dataUrl: string, maxPx = 256, quality = 0.85): Promise<
       canvas.height = Math.round((img.naturalHeight || maxPx) * scale)
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        resolve(canvas.toDataURL('image/jpeg', quality))
+        resolve(canvas.toDataURL('image/png'))
       } else {
         resolve(dataUrl) // fallback: keep original
       }

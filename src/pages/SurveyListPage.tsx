@@ -16,8 +16,8 @@ import { getErrorMessage } from '@/lib/errorMessage'
 import AppShell from '@/components/shared/AppShell'
 import SurveyCard from '@/components/shared/SurveyCard'
 
-/** Compress an image URL to a ≤256 px JPEG data URL for QR canvas embedding. */
-function compressImageToDataUrl(src: string, maxPx = 256, quality = 0.85): Promise<string> {
+/** Compress an image URL to a ≤256 px PNG data URL for QR canvas embedding. */
+function compressImageToDataUrl(src: string, maxPx = 256): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {
@@ -27,10 +27,8 @@ function compressImageToDataUrl(src: string, maxPx = 256, quality = 0.85): Promi
       canvas.height = Math.round((img.naturalHeight || maxPx) * scale)
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        resolve(canvas.toDataURL('image/jpeg', quality))
+        resolve(canvas.toDataURL('image/png'))
       } else {
         resolve(src)
       }
